@@ -2,96 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>NASA Exoplanet Habitability Predictor</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Exoplanet Habitability Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+<body>
 
-<body class="bg-light">
+<div class="container">
+    <h1>🌍 Exoplanet Habitability Predictor</h1>
+    <p class="subtitle">NASA-Inspired AI System</p>
 
-<div class="container mt-5">
-    <div class="card shadow p-4">
-        <h2 class="text-center mb-4">🌍 Exoplanet Habitability Predictor</h2>
+    <form id="predictForm">
+        <label>Planet Temperature (z-score)</label>
+        <input type="number" step="any" id="planet_temp_z" required>
 
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label>Planet Temperature (z-score)</label>
-                <input type="number" step="any" id="planet_temp_z" class="form-control" required>
-            </div>
+        <label>Planet Size (z-score)</label>
+        <input type="number" step="any" id="planet_size_z" required>
 
-            <div class="col-md-6">
-                <label>Planet Size (z-score)</label>
-                <input type="number" step="any" id="planet_size_z" class="form-control" required>
-            </div>
+        <label>Star Temperature (z-score)</label>
+        <input type="number" step="any" id="star_temp_z" required>
 
-            <div class="col-md-6">
-                <label>Star Temperature (z-score)</label>
-                <input type="number" step="any" id="star_temp_z" class="form-control" required>
-            </div>
+        <label>Star Energy (z-score)</label>
+        <input type="number" step="any" id="star_energy_z" required>
 
-            <div class="col-md-6">
-                <label>Star Energy (z-score)</label>
-                <input type="number" step="any" id="star_energy_z" class="form-control" required>
-            </div>
-        </div>
+        <button type="submit">🔭 Predict Habitability</button>
+    </form>
 
-        <div class="text-center mt-4">
-            <button class="btn btn-primary px-4" onclick="predict()">Predict Habitability</button>
-        </div>
-
-        <div class="mt-4 text-center">
-            <h5 id="result"></h5>
-            <p id="score"></p>
-        </div>
+    <div id="result" class="result-box hidden">
+        <h2>Prediction Result</h2>
+        <p><strong>Habitability Score:</strong> <span id="score"></span></p>
+        <p><strong>Status:</strong> <span id="prediction"></span></p>
     </div>
 </div>
 
-<script>
-function predict() {
-
-    const planet_temp_z = document.getElementById("planet_temp_z").value;
-    const planet_size_z = document.getElementById("planet_size_z").value;
-    const star_temp_z = document.getElementById("star_temp_z").value;
-    const star_energy_z = document.getElementById("star_energy_z").value;
-
-    if (!planet_temp_z || !planet_size_z || !star_temp_z || !star_energy_z) {
-        alert("Please fill all fields");
-        return;
-    }
-
-    fetch("/predict", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            planet_temp_z: Number(planet_temp_z),
-            planet_size_z: Number(planet_size_z),
-            star_temp_z: Number(star_temp_z),
-            star_energy_z: Number(star_energy_z)
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-
-        if (data.error) {
-            document.getElementById("result").innerHTML =
-                "<span style='color:red'>" + data.error + "</span>";
-            document.getElementById("score").innerHTML = "";
-            return;
-        }
-
-        document.getElementById("result").innerHTML =
-            "Prediction: <b>" + data.prediction + "</b>";
-
-        document.getElementById("score").innerHTML =
-            "Habitability Score: <b>" + data.habitability_score + "</b>";
-    })
-    .catch(error => {
-        alert("Error connecting to API");
-        console.error(error);
-    });
-}
-</script>
-
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

@@ -8,10 +8,10 @@ app = Flask(__name__)
 model = pickle.load(open("habitability_model.pkl", "rb"))
 
 @app.route("/")
+@app.route("/")
 def home():
-    return jsonify({
-        "message": "NASA Exoplanet Habitability Prediction API is running 🚀"
-    })
+    return render_template("index.html")
+
 
 @app.route("/ui")
 def ui():
