@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card bg-dark text-light p-4">
+        <h2 class="text-center mb-4">🔮 Predict Planet Habitability</h2>
+        <form id="predictForm">
+            <!-- REQUIRED FIELDS -->
+             <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Radius *</label>
+                    <input type="number" step="any" class="form-control" id="radius" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Mass *</label>
+                    <input type="number" step="any" class="form-control" id="mass" require>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Temperature *</label>
+                    <input type="number" step="any" class="form-control" id="temp" required>
+                </div>
+            </div>
+            <!-- AUTOFILL CHECKBOX -->
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="autofill">
+                <label class="form-check-label">
+                    Auto-fill remaining parameters
+                </label>
+            </div>
+            <!-- OPTIONAL FIELDS -->
+             <div id="advanced-fields">
+                <div class="row mb-3">
+                    <div class.col-md-4">
+                        <label class="form-label">Orbital Period</label>
+                        <input type="number" step="any" class="form-control" id="orbital_period">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Distance from Star</label>
+                        <input type="number" step="any" class="form-control" id="distance_star">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Eccentricity</label>
+                        <input type="number" step="any" class="form-control" id="eccentricity">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Semi-Major Axis</label>
+                        <input type="number" step="any" class="form-control" id="semi_major_axis">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Star Temperature</label>
+                        <input type="number" step="any" class="form-control" id="star_temp">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Star Type</label>
+                    <select class="form-control" id="star_type">
+                        <option value="G">G-Type</option>
+                        <option value="K">K-Type</option>
+                        <option value="M">M-Type</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100" >
+                Predict Habitability
+            </button>
+        </form>
+        <!-- RESULT WILL APPEAR HERE -->
+         <div id="result" class="mt-4">
+         </div>
+    </div>
+</div>
+{% endblock %}

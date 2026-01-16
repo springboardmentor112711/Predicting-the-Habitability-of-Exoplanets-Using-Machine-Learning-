@@ -1,0 +1,95 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+
+
+.space-bg {
+    min-height: 100vh;  /*  makes background fill full screen --vh is viewport height */
+    background-image: url("../imagie.gif");
+    background-size: cover;  /*fills entire area without stretching */
+    background-position: center;
+    animation: moveStars 60s linear infinite; /*slow,smooth and professional */
+}
+
+/*subtle background movement */
+/*Keyframes helps create animations by specifying the start and end states of the animation */
+@keyframes moveStars {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: -2000px 1000px;
+    }
+}
+
+/*====LANDING SECTION====*/
+.landing{
+    padding-top:140px;
+}
+/* Title animation */
+.title{
+    animation: fadeInUp 2s ease-out;
+}
+
+.subtitle{
+    opacity:0.85;
+    animation:fadeInUp 2.5s ease-out;
+}
+
+/*Fade + slide animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/*=====FACT CARDS====*/
+.fact-card{
+    background: rgba(0, 0, 0, 0.65); /*semi-transparent black */
+    border-radius: 14px;
+    padding: 25px;
+    font-size:1.2rem;
+    margin: auto; /*centers the card */
+    max-width:700px;
+}
+
+/* ===== ACTION CARDS ===== */
+.action-card {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 25px;
+    border-radius: 18px;
+    height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /*Smooth hover */
+}
+
+.action-card:hover {
+    transform: translateY(-8px); /* card lift effect*/
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
+/* Placeholder section styling */
+#ranking-section {
+    opacity: 0.85;
+}
+
+/* ===== FEATURE INSIGHTS ===== */
+.insight-card {
+    background: rgba(0, 0, 0, 0.65);
+    padding: 20px;
+    border-radius: 14px;
+    height: 100%;
+    transition: transform 0.3s ease;
+}
+
+.insight-card:hover {
+    transform: translateY(-5px);
+}

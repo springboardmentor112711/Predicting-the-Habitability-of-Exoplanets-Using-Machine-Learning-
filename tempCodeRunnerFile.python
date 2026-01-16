@@ -1,0 +1,11 @@
+from flask import Flask, render_template,request,redirect,url_for,jsonify
+import os
+app=Flask(__name__)
+@app.route('/',methods=["GET"])
+def home():
+    return jsonify({
+        "status":"success",
+        "message":"Welcome to ExoPlanet Habitability AI "
+    })
+if __name__=="__main__":
+    app.run(debug=True)

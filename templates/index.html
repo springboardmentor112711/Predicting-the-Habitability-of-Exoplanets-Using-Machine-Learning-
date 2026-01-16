@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExoHabit</title>
+    
+    <!--Bootstrap CSS Loading-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!--Normal CSS external sheet loading-->
+    <link rel="stylesheet" href="{{url_for('static',filename='css/style.css')}}">
+</head>
+<body>
+    <!--SPACE BACKGROUND WRAPPER--holds animated background-->
+    <div class="space-bg">
+        <!--LANDING CONTENT-->
+        <div class="container text-center landing">
+        <h1 class="display-4 title">ExoHabit AI</h1>
+        <p class="lead subtitle">
+            Exploring the habitability of distant worlds
+        </p>
+        </div>
+        <!--ROTATING FACTS SECTION-->
+        <div class="container mt-5">
+            <!--carousel slide tells bootstrap its a carousel-->
+            <!--data-bs-ride starts auto start rotation-->
+            <div id="factsCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner text-center">
+                    <!--carousel-item active is the first visible item,so exactly one item must be active at a given time-->
+                    <div class="carousel-item active">
+                        <div class="fact-card">
+                            🌍 Earth is the only known planet with surface liquid water.
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="fact-card">
+                            🌡️ Temperature plays a major role in planetary habitability.
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="fact-card">
+                            🪐 Most discovered exoplanets are larger than Earth.
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="fact-card">
+                            ⭐ Star type influences the habitable zone of a planet.
+                        </div>
+                    </div>
+                </div>    
+            </div>
+        </div>
+        <!--MAIN ACTION CARDS-- they are visual buttons,grouped actions for the user-->
+        <div class="container mt-5">
+            <!--row- Horizontal layout container--->
+            <div class="row text-center">
+                <!--Predict habitability-->
+                <!--3 equal columns on desktop and automatic stakcs mb-margin botton for spacing-->
+                <div class="col-md-4 mb-4">
+                    <div class="action-card">
+                        <h3>Predict Habitability</h3>
+                        <p>Use our AI model to predict the habitability of exoplanets based on their characteristics.</p>
+                        <button class="btn btn-primary mt-2" href="predict-section">
+                            Predict
+                        </button>
+                    </div>
+                </div>
+                 <!-- Ranked Planets -->
+                <div class="col-md-4 mb-4">
+                    <div class="action-card">
+                        <h3>🏆 Ranked Planets</h3>
+                        <p>View planets ranked by habitability score</p>
+                        <button class="btn btn-success mt-2">
+                            View Rankings
+                        </button>
+                    </div>
+                </div>
+                <!-- Feature Insights -->
+                <div class="col-md-4 mb-4">
+                    <div class="action-card">
+                        <h3>📊 Feature Insights</h3>
+                        <p>Understand what affects habitability</p>
+                        <button class="btn btn-warning mt-2">
+                            Explore
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Predict habitability section---->
+        <div class="container mt-5" id="predict-section">
+            <div class="card bg-dark text-light p-4">
+                <h2 class="text-center mb-4">🔮 Predict Planet Habitability</h2>
+                <form id="predictForm">
+                    <!-- REQUIRED FIELDS -->
+                     <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Radius *</label>
+                            <input type="number" step="any" class="form-control" id="radius" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Mass *</label>
+                            <input type="number" step="any" class="form-control" id="mass" require>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Temperature *</label>
+                            <input type="number" step="any" class="form-control" id="temp" required>
+                        </div>
+                    </div>
+                    <!-- AUTOFILL CHECKBOX -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="autofill">
+                        <label class="form-check-label">
+                            Auto-fill remaining parameters
+                        </label>
+                    </div>
+                    <!-- OPTIONAL FIELDS -->
+                     <div id="advanced-fields">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Orbital Period</label>
+                                <input type="number" step="any" class="form-control" id="orbital_period">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Distance from Star</label>
+                                <input type="number" step="any" class="form-control" id="distance_star">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Eccentricity</label>
+                                <input type="number" step="any" class="form-control" id="eccentricity">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Semi-Major Axis</label>
+                                <input type="number" step="any" class="form-control" id="semi_major_axis">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Star Temperature</label>
+                                <input type="number" step="any" class="form-control" id="star_temp">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Star Type</label>
+                            <select class="form-control" id="star_type">
+                                <option value="G">G-Type</option>
+                                <option value="K">K-Type</option>
+                                <option value="M">M-Type</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" >
+                        Predict Habitability
+                    </button>
+                </form>
+                <!-- RESULT WILL APPEAR HERE -->
+                 <div id="result" class="mt-4">
+                 </div>
+                <!-- 🏆 RANKED EXOPLANETS SECTION (MODULE 6 PLACEHOLDER) -->
+<div class="container mt-5" id="ranking-section">
+  <div class="card bg-dark text-light p-4 text-center">
+
+    <h2 class="mb-3">🏆 Ranked Exoplanets</h2>
+
+    <p class="text-muted">
+      Ranking and analytics will be available in the next module.
+    </p>
+
+    <button class="btn btn-secondary mt-3" >
+      Rankings Coming Soon
+    </button>
+
+  </div>
+</div>
+
+<!-- 📊 FEATURE INSIGHTS SECTION -->
+<div class="container mt-5" id="insights-section">
+  <div class="card bg-dark text-light p-4">
+
+    <h2 class="text-center mb-4">📊 Feature Insights</h2>
+
+    <div class="row">
+
+      <div class="col-md-4 mb-4">
+        <div class="insight-card">
+          <h4>📐 Radius</h4>
+          <p>
+            Planetary radius affects gravity and atmosphere retention.
+            Extremely large or small planets are less likely to be habitable.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <div class="insight-card">
+          <h4>⚖️ Mass</h4>
+          <p>
+            Mass determines surface gravity. Too little mass cannot hold
+            an atmosphere, while too much may lead to extreme pressure.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <div class="insight-card">
+          <h4>🌡️ Temperature</h4>
+          <p>
+            Surface temperature strongly influences the presence of liquid
+            water, a key requirement for habitability.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-4">
+        <div class="insight-card">
+          <h4>🌀 Orbital Properties</h4>
+          <p>
+            Orbital period, eccentricity, and distance from the star
+            determine climate stability and seasonal variation.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-4">
+        <div class="insight-card">
+          <h4>⭐ Star Type</h4>
+          <p>
+            The type of host star affects radiation levels and the
+            location of the habitable zone.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="text-muted text-center mt-3">
+      Detailed analytics and visualizations will be introduced in the next module.
+    </p>
+
+  </div>
+</div>
+
+            </div>
+       </div>
+</div>
+
+<!--Bootstrap JS-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!--Normal JS-->
+<script src="{{url_for('static', filename='js/main.js')}}"></script>
+</body>
+</html>

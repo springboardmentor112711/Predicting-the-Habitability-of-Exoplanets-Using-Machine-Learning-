@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--LANDING CONTENT-->
+<div class="container text-center landing">
+<h1 class="display-4 title">ExoHabit AI</h1>
+<p class="lead subtitle">
+    Exploring the habitability of distant worlds
+</p>
+</div>
+<!--ROTATING FACTS SECTION-->
+<div class="container mt-5">
+    <!--carousel slide tells bootstrap its a carousel-->
+    <!--data-bs-ride starts auto start rotation-->
+    <div id="factsCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner text-center">
+            <!--carousel-item active is the first visible item,so exactly one item must be active at a given time-->
+            <div class="carousel-item active">
+                <div class="fact-card">
+                    🌍 Earth is the only known planet with surface liquid water.
+                </div>
+                </div>
+            <div class="carousel-item">
+                <div class="fact-card">
+                    🌡️ Temperature plays a major role in planetary habitability.
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="fact-card">
+                    🪐 Most discovered exoplanets are larger than Earth.
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="fact-card">
+                    ⭐ Star type influences the habitable zone of a planet.
+                </div>
+            </div>
+        </div>    
+    </div>
+</div>
+{% endblock %}
