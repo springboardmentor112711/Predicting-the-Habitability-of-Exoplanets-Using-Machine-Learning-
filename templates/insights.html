@@ -1,69 +1,28 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-5" id="insights-section">
-  <div class="card bg-dark text-light p-4">
-
-    <h2 class="text-center mb-4">📊 Feature Insights</h2>
-
-    <div class="row">
-
-      <div class="col-md-4 mb-4">
-        <div class="insight-card">
-          <h4>📐 Radius</h4>
-          <p>
-            Planetary radius affects gravity and atmosphere retention.
-            Extremely large or small planets are less likely to be habitable.
-          </p>
-        </div>
-      </div>
-
-      <div class="col-md-4 mb-4">
-        <div class="insight-card">
-          <h4>⚖️ Mass</h4>
-          <p>
-            Mass determines surface gravity. Too little mass cannot hold
-            an atmosphere, while too much may lead to extreme pressure.
-          </p>
-        </div>
-      </div>
-
-      <div class="col-md-4 mb-4">
-        <div class="insight-card">
-          <h4>🌡️ Temperature</h4>
-          <p>
-            Surface temperature strongly influences the presence of liquid
-            water, a key requirement for habitability.
-          </p>
-        </div>
-      </div>
-
-      <div class="col-md-6 mb-4">
-        <div class="insight-card">
-          <h4>🌀 Orbital Properties</h4>
-          <p>
-            Orbital period, eccentricity, and distance from the star
-            determine climate stability and seasonal variation.
-          </p>
-        </div>
-      </div>
-
-      <div class="col-md-6 mb-4">
-        <div class="insight-card">
-          <h4>⭐ Star Type</h4>
-          <p>
-            The type of host star affects radiation levels and the
-            location of the habitable zone.
-          </p>
-        </div>
-      </div>
-
-    </div>
-
-    <p class="text-muted text-center mt-3">
-      Detailed analytics and visualizations will be introduced in the next module.
-    </p>
-
+<div class="container mt-5 text-light" id="insights-section"><!--mt-5 means margin-top: 50px-->
+  <h2 class="text-center mb-4">📊 Exoplanet Analytics Dashboard</h2>
+  
+  <div class="card bg-dark p-4 mb-4">
+    <h4>Feature importance</h4>
+    <div id="featureImportanceChart"></div>
   </div>
+
+  <div class="card bg-dark p-4 mb-4"> <!--p-4 means padding: 40px-->
+    <h4>Habitability Score Distribution</h4>
+    <div id="scoreDistributionChart"></div>
+  </div>
+
+  <div class="card bg-dark p-4 mb-4">
+    <h4>Star-Planet Correlation Heatmap</h4>
+    <div id="correlationHeatmap"></div>
+  </div>
+
+  <a href="/export" class="btn btn-success mt-3">Download Excel Report</a> <!--mt-3 means margin-top: 30px-->
+  <a href="/export-pdf" class="btn btn-danger mt-3 ms-2">Download PDF Report</a> <!--ms-2 means margin-left: 20px->
+  <!--btn-danger is bootstrap class for red button-->
 </div>
-{% endblock %}
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script><!--Plotly JS-->
+  <script src="{{url_for('static',filename='js/dashboard.js')}}"></script><!--Custom JS for dashboard-->
+  {% endblock %} 

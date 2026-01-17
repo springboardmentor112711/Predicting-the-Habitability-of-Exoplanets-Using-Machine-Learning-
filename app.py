@@ -1,18 +1,20 @@
 from flask import Flask, render_template,request,redirect,url_for,jsonify
-from flask_cors import CORS
-import os
+from flask_cors import CORS #to handle cross origin requests like frontend to backend and vice versa
+from flask import send_file #to send files as response for download
+import os 
 import pandas as pd
-import joblib
+import joblib #to load trained machine learning model
 import psycopg2 #importing psycopg2 to connect to postgresql database in supabase
 app=Flask(__name__)  #Flask app instance creation
-CORS(app) #enabling CORS for flask app,,what is CORS?
+CORS(app) #Cross-Origin Resource Sharing to allow requests from different origins like frontend to backend
 model=joblib.load("habitability_trained.pkl") #loading the trained model:)
 cluster_model=joblib.load("cluster_model.pkl")
 cluster_scaler=joblib.load("cluster_scaler.pkl")
 cluster_defaults=joblib.load("cluster_defaults.pkl")
 
+
 def get_db_connection():
-    conn=psycopg2.connect( #connecting to postgresql database in supabase
+    conn=psycopg2.connect( #connecting to posgresql database in supabase
         host=os.getenv("SUPABASE_DB_HOST"),
         user=os.getenv("SUPABASE_DB_USER"),
         password=os.getenv("SUPABASE_DB_PASSWORD"),
@@ -21,27 +23,27 @@ def get_db_connection():
     )
     return conn
 
-@app.route('/',methods=["GET"])
+@app.route('/',methods=["GET"]) #this is endpoint for rendering home page
 def home():
     return render_template("home.html")
 
-@app.route('/predict', methods=["GET"])
+@app.route('/predict', methods=["GET"])#predict page rendering endpoint
 def predict_page():
     return render_template("predict.html")
 
-@app.route('/rank', methods=["GET"])
+@app.route('/rank', methods=["GET"])# rank page rendering endpoint
 def rank_page():
     return render_template("rank.html")
 
-@app.route('/insights', methods=["GET"])
+@app.route('/insights', methods=["GET"])# insights page rendering endpoint
 def insights_page():
     return render_template("insights.html")
     
-@app.route("/db_test",methods=["GET"])
+@app.route("/db_test",methods=["GET"])#database connection test endpoint
 def db_test():
     try:
-        conn=get_db_connection()
-        cursor=conn.cursor()
+        conn=get_db_connection()#getting database connection
+        cursor=conn.cursor()#creating cursor object to execute sql queries
         cursor.execute("SELECT 1;")
         result=cursor.fetchone()
         cursor.close()
@@ -58,7 +60,7 @@ def db_test():
             "error":str(e)
         }),500
         
-@app.route('/predict', methods=["POST"])
+@app.route('/predict', methods=["POST"])#predict endpoint for handling prediction requests
 def predict():
     data = request.get_json()
     autofill = data.get("autofill", False)
@@ -140,7 +142,42 @@ def predict():
     # =============================
     prediction = int(model.predict(input_df)[0])
     probability = float(model.predict_proba(input_df)[0][1])
-
+    
+    # >>> ADD THIS BLOCK HERE <<<
+# SAVE PREDICTION TO SUPABASE 
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+        INSERT INTO exoplanets
+        (radius, mass, temp, orbital_period, distance_star, star_temp,
+         eccentricity, semi_major_axis, star_type, habitability_probability)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (
+            float(input_df["radius"][0]),
+            float(input_df["mass"][0]),
+            float(input_df["temp"][0]),
+            float(input_df["orbital_period"][0]),
+            float(input_df["distance_star"][0]),
+            float(input_df["star_temp"][0]),
+            float(input_df["eccentricity"][0]),
+            float(input_df["semi_major_axis"][0]),
+            input_df["star_type"][0],
+            probability
+        ))
+        conn.commit()
+    except Exception as e:
+        print("❌ Database insert failed:", e)
+        
+    finally:
+        try:
+            cur.close()
+            conn.close()
+        except:
+            pass
+# >>> END OF ADDED BLOCK <<<
+    
+    
     return jsonify({
         "mode": "autofill" if autofill else "manual",
         "habitable": prediction,
@@ -148,21 +185,19 @@ def predict():
     })
 
     
-@app.route('/rank',methods=["POST"])
+@app.route('/rank-data',methods=["GET"])#rank endpoint for ranking exoplanets based on habitability probability
 def rank():
-    data=request.get_json()
-    df=pd.DataFrame(data)
-    df['habitability_probability']=model.predict_proba(df)[:,1].tolist() #[:,1] to get probability of class 1 for all rows
-    #creating probability column in dataframe for each exoplanet
-    df["rank"]=df['habitability_probability'].rank(ascending=False)#creating rank column based on probability and assigning rank in descending order
-    df=df.sort_values(by='rank')# sorting dataframe based on rank
+    conn=get_db_connection() #getting database connection
+    df=pd.read_sql("SELECT radius, mass, temp, habitability_probability FROM exoplanets ORDER BY habitability_probability DESC LIMIT 10""", conn)
+    conn.close()
+    df=df.fillna(0)
+    df["rank"]=range(1,len(df)+1)
     return jsonify({
-        "ranked_exoplanets":df.to_dict(orient="records") #df.to.dict means converting dataframe to dictionary
-        #why dictionary because it has many rows and each record is a planet's data
-        #so we send it as list of dictionaries(records) in json format. Example:[{"planet1_data"},{...}],say planet1_data has keys like mass,radius,etc
+        "planets": df.to_dict(orient="records")
     })
     
-@app.route('/predict_input',methods=["POST"])
+    
+@app.route('/predict_input',methods=["POST"])#endpoint to validate user input for prediction
 def predict_input():
     data=request.get_json()  #getting data from form submitted by user
     required_fields=[
@@ -188,7 +223,7 @@ def predict_input():
         "input_data":data
     }),200
     
-@app.route("/planets", methods=["GET"])
+@app.route("/planets", methods=["GET"])#endpoint to fetch exoplanet data from database
 def get_planets():
     conn = get_db_connection()
     cur = conn.cursor()
@@ -201,31 +236,131 @@ def get_planets():
         "planets": rows
     })
     
+@app.route("/feature-importance", methods=["GET"])
+def feature_importance():
+    try:
+        xgb_model = model.steps[-1][1]   # extract real model
+
+        importances = xgb_model.feature_importances_
+        feature_names = model.feature_names_in_
+
+        result = []
+        for f, i in zip(feature_names, importances):
+            result.append({
+                "feature": f,
+                "importance": round(float(i), 4)
+            })
+
+        return jsonify({
+            "feature_importance": sorted(result, key=lambda x: x["importance"], reverse=True)
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+#@app.route("/feature-importance-plot",methods=["GET"])#feature importance plot endpoint
+#def feature_importnace_plot():
+ #   import matplotlib.pyplot as plt
     
-#@app.route("/feature-importance")
-#def feature_importance():
-#    return jsonify({
-#        "message":"Feature importance endpoint coming soon"
-#    })
+  # importances=model.feature_importances_#getting feature importances from model
+   # feature_names=model.feature_names_in_ #getting feature names from model
+    
+    #plt.figure(figsize=(8,5))
+    #plt.barh(feature_names,importances) #barh for horizontal bar plot
+    #plt.xlabel("Importance")
+    #plt.ylabel("Feature Importance for Habitability Prediction")
+    #plt.tight_layout()#tight_layout means adjust plot to fit in figure area
+    
+    #file_path="static/feature_importance.png"
+    #plt.savefig(file_path)
+    #plt.close()
+    
+    #r#eturn jsonify({"image":file_path})
+
+   #the logic behind this entire endpoint is to generate a bar plot of feature importances using matplotlib
+   #and save it to a file called feature_importance.png in the static folder
+   
+
+@app.route("/score-distribution",methods=["GET"])#score distribution endpoint
+def score_distribution():
+    conn =get_db_connection() #why connect to database? to fetch habitability scores of exoplanets
+    df=pd.read_sql("SELECT habitability_probability FROM exoplanets;",conn)#fetching habitability probabilities from exoplanets table
+    conn.close()
+    
+    return jsonify({
+        "scores":df['habitability_probability'].dropna().tolist() #converting series to list to send as json response
+    })
+
+@app.route("/correlations", methods=["GET"])#correlations endpoint
+#WHY correlations? to analyze relationships between features and habitability scores
+def correlations():
+    conn = get_db_connection()
+    df = pd.read_sql("""
+        SELECT radius,mass,temp,orbital_period,distance_star,
+               star_temp,eccentricity,semi_major_axis,habitability_probability 
+        FROM exoplanets
+    """, conn)
+    conn.close()
+
+    corr = df.corr().round(3).fillna(0)
+
+    return jsonify({
+        "labels": corr.columns.tolist(),
+        "matrix": corr.values.tolist()
+    })
 
 
-#@app.route("/score-distribution")
-#def score_distribution():
-#    return jsonify({
-#        "message":"Score distribution endpoint coming soon"
-#    })
+@app.route("/export") #data export endpoint
+def export(): 
+    from openpyxl import Workbook #importing openpyxl to create excel files
+    
+    conn=get_db_connection() #connecting to database to fetch exoplanet data
+    df=pd.read_sql("SELECT * FROM exoplanets ORDER BY habitability_probability DESC LIMIT 10;",conn) 
+    #fetching top 10 exoplanets based on habitability probability
+    conn.close()
+    
+    wb=Workbook() #creating workbook object
+    ws=wb.active #getting active worksheet
+    ws.title="Top 10 Habitable Exoplanets" #setting worksheet title
+    
+    ws.append(df.columns.tolist()) #adding header row with column names
+    for row in df.itertuples(index=False): #iterating over dataframe rows without index
+        ws.append(list(row)) #adding each row to worksheet
+        
+    file_path = "static/top_10_habitable_exoplanets.xlsx" #file path to save excel file
+    wb.save(file_path) #saving workbook to file
+    
+    return send_file(file_path,as_attachment=True) #sending file as attachment for download
 
-#@app.route("/correlations")
-#def correlations():
-#    return jsonify({
-#        "message":"Correlations endpoint coming soon"
-#    })
 
-#@app.route("/export")
-#def export_data():
-#    return jsonify({
-#        "message":"Data export endpoint coming soon"
-#    })
+@app.route("/export-pdf", methods=["GET"])#pdf export endpoint
+def export_pdf():
+    from reportlab.platypus import SimpleDocTemplate,Table 
+    #what is reportlab.platypus? it is a library to create pdf documents in python
+    #other alternatives are fpdf,PyPDF2,etc
+    #why SimpleDocTemplate and Table? SimpleDocTemplate is used to create simple pdf documents
+    #Table is used to create tables in pdf documents
+    from reportlab.lib.pagesizes import A4
+    #A4 is a standard page size for documents
+    
+    conn=get_db_connection() #connecting to database to fetch exoplanet data
+    df=pd.read_sql("SELECT * FROM exoplanets ORDER BY habitability_probability DESC LIMIT 10;",conn)
+    conn.close()
+    
+    doc=SimpleDocTemplate("static/top_10_habitable_exoplanets.pdf",pagesize=A4)
+    table=Table([df.columns.tolist()]+ df.values.tolist())
+    #what does the above line mean?
+    #it creates a table with header row as column names and data rows as exoplanet data
+    # df.columns.tolist() + df.values.tolist() creates a list of lists where first inner list is header row and rest are data rows
+    #example: [["col1","col2",...],["data1_row1","data2_row1",...],...]
+    
+    doc.build([table]) #building pdf document with the table
+    
+    return send_file("static/top_10_habitable_exoplanets.pdf",as_attachment=True) #sending pdf file as attachment for download
 
-if __name__=="__main__":
+
+if __name__=="__main__":#main method to run the flask app
     app.run(debug=True)

@@ -84,25 +84,14 @@ if(predictForm){
 }
 
 function displayResult(data) {
-
-    let message = "";
-    let alertClass = "";
-
-    if (data.habitable === 1) {
-        message = "🌍 This planet is likely HABITABLE!";
-        alertClass = "alert-success";
-    } else {
-        message = "🪐 This planet is likely NOT habitable.";
-        alertClass = "alert-warning";
-    }
+    const color = data.habitable === 1 ? "success" : "warning";
 
     resultDiv.innerHTML = `
-        <div class="alert ${alertClass}">
-            <h5>${message}</h5>
+        <div class="alert alert-${color}">
+            <h5>${data.habitable ? "🌍 This planet is likely HABITABLE!" : "🪐 This planet is likely NOT habitable."}</h5>
             <p><strong>Mode:</strong> ${data.mode}</p>
             <p><strong>Habitability Score:</strong> ${(data.habitability_score * 100).toFixed(2)}%</p>
+            <a href="/insights" class="btn btn-info mt-2">View Analytics</a>
         </div>
     `;
 }
-
-
