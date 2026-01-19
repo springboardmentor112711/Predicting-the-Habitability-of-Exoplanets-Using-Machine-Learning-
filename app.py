@@ -189,13 +189,39 @@ def predict():
 @app.route('/rank-data',methods=["GET"])#rank endpoint for ranking exoplanets based on habitability probability
 def rank():
     conn=get_db_connection() #getting database connection
-    df=pd.read_sql("SELECT radius, mass, temp, habitability_probability FROM exoplanets ORDER BY habitability_probability DESC LIMIT 10""", conn)
+    df=pd.read_sql("""
+        SELECT id, radius, mass, temp, habitability_probability
+        FROM exoplanets
+        ORDER BY habitability_probability DESC
+    """, conn)
     conn.close()
     df=df.fillna(0)
     df["rank"]=range(1,len(df)+1)
     return jsonify({
         "planets": df.to_dict(orient="records")
     })
+
+
+@app.route('/planet/<int:planet_id>', methods=["GET"])
+def planet_detail(planet_id):
+    conn = get_db_connection()
+    df = pd.read_sql(
+        """
+        SELECT id, radius, mass, temp, orbital_period, distance_star, star_temp,
+               eccentricity, semi_major_axis, star_type, habitability_probability
+        FROM exoplanets
+        WHERE id = %s
+        LIMIT 1
+        """,
+        conn,
+        params=(planet_id,)
+    )
+    conn.close()
+
+    if df.empty:
+        return jsonify({"error": "Planet not found"}), 404
+
+    return jsonify({"planet": df.iloc[0].to_dict()})
     
     
 @app.route('/predict_input',methods=["POST"])#endpoint to validate user input for prediction

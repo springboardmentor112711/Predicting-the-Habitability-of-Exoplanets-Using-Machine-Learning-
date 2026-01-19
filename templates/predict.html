@@ -8,39 +8,134 @@
             <p class="neon-subtitle">Enter planetary parameters to evaluate habitability using AI</p>
 
             <form id="predictForm" class="mt-4">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <input type="number" step="any" id="radius" class="glass-input" placeholder="Radius *" required>
+                <div class="btn-group w-100" role="group" aria-label="Input mode toggle">
+                    <input type="radio" class="btn-check" name="inputMode" id="modeNumeric" value="numeric" checked>
+                    <label class="btn btn-outline-info w-50" for="modeNumeric">Numeric Input</label>
+                    <input type="radio" class="btn-check" name="inputMode" id="modeComparative" value="comparative">
+                    <label class="btn btn-outline-info w-50" for="modeComparative">Comparative Input</label>
+                </div>
+
+                <div id="numeric-fields" class="mt-4">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <input type="number" step="any" id="radius" class="glass-input" placeholder="Radius *" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="number" step="any" id="mass" class="glass-input" placeholder="Mass *" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="number" step="any" id="temp" class="glass-input" placeholder="Temperature *" required>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <input type="number" step="any" id="mass" class="glass-input" placeholder="Mass *" required>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="number" step="any" id="temp" class="glass-input" placeholder="Temperature *" required>
+                </div>
+
+                <div id="comparative-fields" class="mt-4" style="display:none;">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <select id="radiusComparative" class="glass-input" aria-label="Radius comparative">
+                                <option value="Earth">Radius: Earth</option>
+                                <option value="Venus">Radius: Venus</option>
+                                <option value="Mars">Radius: Mars</option>
+                                <option value="Jupiter">Radius: Jupiter</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select id="massComparative" class="glass-input" aria-label="Mass comparative">
+                                <option value="Earth">Mass: Earth</option>
+                                <option value="Venus">Mass: Venus</option>
+                                <option value="Mars">Mass: Mars</option>
+                                <option value="Jupiter">Mass: Jupiter</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select id="tempComparative" class="glass-input" aria-label="Temperature comparative">
+                                <option value="Earth">Temperature: Earth</option>
+                                <option value="Venus">Temperature: Venus</option>
+                                <option value="Mars">Temperature: Mars</option>
+                                <option value="Jupiter">Temperature: Jupiter</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-check neon-check mt-4">
                     <input class="form-check-input" type="checkbox" id="autofill">
-                    <label class="form-check-label">Auto‑fill advanced parameters using AI</label>
+                    <label class="form-check-label">Auto-fill advanced parameters using AI</label>
                 </div>
 
                 <div id="advanced-fields" class="mt-4">
-                    <div class="row g-3">
-                        <div class="col-md-4"><input type="number" step="any" id="orbital_period" class="glass-input" placeholder="Orbital Period"></div>
-                        <div class="col-md-4"><input type="number" step="any" id="distance_star" class="glass-input" placeholder="Distance From Star"></div>
-                        <div class="col-md-4"><input type="number" step="any" id="eccentricity" class="glass-input" placeholder="Eccentricity"></div>
+                    <div id="advanced-numeric">
+                        <div class="row g-3">
+                            <div class="col-md-4"><input type="number" step="any" id="orbital_period" class="glass-input" placeholder="Orbital Period"></div>
+                            <div class="col-md-4"><input type="number" step="any" id="distance_star" class="glass-input" placeholder="Distance From Star"></div>
+                            <div class="col-md-4"><input type="number" step="any" id="eccentricity" class="glass-input" placeholder="Eccentricity"></div>
+                        </div>
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6"><input type="number" step="any" id="semi_major_axis" class="glass-input" placeholder="Semi Major Axis"></div>
+                            <div class="col-md-6"><input type="number" step="any" id="star_temp" class="glass-input" placeholder="Star Temperature"></div>
+                        </div>
+                        <div class="mt-3">
+                            <select id="star_type" class="glass-input">
+                                <option value="G">G-Type Star</option>
+                                <option value="K">K-Type Star</option>
+                                <option value="M">M-Type Star</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="row g-3 mt-2">
-                        <div class="col-md-6"><input type="number" step="any" id="semi_major_axis" class="glass-input" placeholder="Semi Major Axis"></div>
-                        <div class="col-md-6"><input type="number" step="any" id="star_temp" class="glass-input" placeholder="Star Temperature"></div>
-                    </div>
-                    <div class="mt-3">
-                        <select id="star_type" class="glass-input">
-                            <option value="G">G‑Type Star</option>
-                            <option value="K">K‑Type Star</option>
-                            <option value="M">M‑Type Star</option>
-                        </select>
+
+                    <div id="advanced-comparative" style="display:none;">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <select id="orbital_period_comp" class="glass-input" aria-label="Orbital period comparative">
+                                    <option value="Earth">Orbital Period: Earth</option>
+                                    <option value="Venus">Orbital Period: Venus</option>
+                                    <option value="Mars">Orbital Period: Mars</option>
+                                    <option value="Jupiter">Orbital Period: Jupiter</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select id="distance_star_comp" class="glass-input" aria-label="Distance from star comparative">
+                                    <option value="Earth">Distance From Star: Earth</option>
+                                    <option value="Venus">Distance From Star: Venus</option>
+                                    <option value="Mars">Distance From Star: Mars</option>
+                                    <option value="Jupiter">Distance From Star: Jupiter</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select id="eccentricity_comp" class="glass-input" aria-label="Eccentricity comparative">
+                                    <option value="Earth">Eccentricity: Earth</option>
+                                    <option value="Venus">Eccentricity: Venus</option>
+                                    <option value="Mars">Eccentricity: Mars</option>
+                                    <option value="Jupiter">Eccentricity: Jupiter</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <select id="semi_major_axis_comp" class="glass-input" aria-label="Semi major axis comparative">
+                                    <option value="Earth">Semi Major Axis: Earth</option>
+                                    <option value="Venus">Semi Major Axis: Venus</option>
+                                    <option value="Mars">Semi Major Axis: Mars</option>
+                                    <option value="Jupiter">Semi Major Axis: Jupiter</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <select id="star_temp_comp" class="glass-input" aria-label="Star temperature comparative">
+                                    <option value="Earth">Star Temperature: Sun (G)</option>
+                                    <option value="Venus">Star Temperature: Sun (G)</option>
+                                    <option value="Mars">Star Temperature: Sun (G)</option>
+                                    <option value="Jupiter">Star Temperature: Sun (G)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <select id="star_type_comp" class="glass-input">
+                                <option value="Earth">Star Type: Sun (G)</option>
+                                <option value="Venus">Star Type: Sun (G)</option>
+                                <option value="Mars">Star Type: Sun (G)</option>
+                                <option value="Jupiter">Star Type: Sun (G)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 

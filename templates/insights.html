@@ -8,33 +8,78 @@
             <h2 class="neon-title">📊 Exoplanet Analytics Insights</h2>
             <p class="neon-subtitle">AI‑powered explainability & habitability intelligence</p>
 
+            <div class="btn-group w-100 my-3" role="group" aria-label="Insights mode toggle">
+                <input type="radio" class="btn-check" name="insightsMode" id="modeAll" value="all" checked>
+                <label class="btn btn-outline-info" for="modeAll">All Planets Insights</label>
+                <input type="radio" class="btn-check" name="insightsMode" id="modeSingle" value="single">
+                <label class="btn btn-outline-info" for="modeSingle">Single Planet Insights</label>
+            </div>
 
-<div class="row g-4 mt-4">
-<div class="col-lg-6">
-<div class="insight-panel">
-<h4 class="panel-title">Feature Importance</h4>
-<div id="featureImportanceChart"></div>
-</div>
-</div>
-<div class="col-lg-6">
-<div class="insight-panel">
-<h4 class="panel-title">Habitability Score Distribution</h4>
-<div id="scoreDistributionChart"></div>
-</div>
-</div>
-<div class="col-12">
-<div class="insight-panel">
-<h4 class="panel-title">Star–Planet Correlation Heatmap</h4>
-<div id="correlationHeatmap"></div>
-</div>
-</div>
-</div>
+            <div id="singlePlaceholder" class="row g-4 mt-4" style="display:none;">
+                <div class="col-12">
+                    <div class="insight-panel text-center py-5">
+                        <h4 class="panel-title mb-3">No Planet Selected</h4>
+                        <p class="text-info mb-4">Select a planet from the Rank page to view individual insights.</p>
+                        <a href="/rank" class="neon-btn">Go to Rank Page</a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="singleInsights" class="row g-4 mt-4" style="display:none;">
+                <div class="col-lg-5">
+                    <div class="insight-panel">
+                        <h4 class="panel-title">Single Planet Habitability</h4>
+                        <div class="progress" role="progressbar" aria-label="Habitability score">
+                            <div class="progress-bar bg-info" id="singleHabitabilityBar" style="width:0%">0%</div>
+                        </div>
+                        <p class="mt-2 mb-1"><strong>Risk:</strong> <span id="riskBadge" class="badge bg-secondary">--</span></p>
+                        <p class="small mb-0" id="habitabilityReason">Why this planet is (not) habitable.</p>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="insight-panel">
+                        <h4 class="panel-title">Planet Parameters</h4>
+                        <div class="table-responsive">
+                            <table class="table table-sm rank-table mb-0">
+                                <tbody id="singlePlanetTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="insight-panel">
+                        <h4 class="panel-title">Planet vs Earth Comparison</h4>
+                        <div id="earthComparisonChart"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="allInsights" class="row g-4 mt-4">
+                <div class="col-lg-6">
+                    <div class="insight-panel">
+                        <h4 class="panel-title">Feature Importance</h4>
+                        <div id="featureImportanceChart"></div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="insight-panel">
+                        <h4 class="panel-title">Habitability Score Distribution</h4>
+                        <div id="scoreDistributionChart"></div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="insight-panel">
+                        <h4 class="panel-title">Star–Planet Correlation Heatmap</h4>
+                        <div id="correlationHeatmap"></div>
+                    </div>
+                </div>
+            </div>
 
 
-<div class="text-center mt-4">
-<a href="/export" class="neon-btn me-2">Download Excel Report</a>
-<a href="/export-pdf" class="neon-btn">Download PDF Report</a>
-</div>
+            <div class="text-center mt-4">
+                <a href="/export" class="neon-btn me-2">Download Excel Report</a>
+                <a href="/export-pdf" class="neon-btn">Download PDF Report</a>
+            </div>
 </div>
 </div>
 </div>
