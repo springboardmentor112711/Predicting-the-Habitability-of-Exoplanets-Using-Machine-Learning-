@@ -2,6 +2,7 @@ from flask import Flask, render_template,request,redirect,url_for,jsonify
 from flask_cors import CORS #to handle cross origin requests like frontend to backend and vice versa
 from flask import send_file #to send files as response for download
 import os 
+import json
 import pandas as pd
 import joblib #to load trained machine learning model
 import psycopg2 #importing psycopg2 to connect to postgresql database in supabase
@@ -360,6 +361,12 @@ def export_pdf():
     doc.build([table]) #building pdf document with the table
     
     return send_file("static/top_10_habitable_exoplanets.pdf",as_attachment=True) #sending pdf file as attachment for download
+
+
+@app.route("/exoplanet-facts")
+def exoplanet_facts():
+    with open("static/data/exoplanet_facts.json", "r", encoding="utf-8") as f:
+        return jsonify(json.load(f))
 
 
 if __name__=="__main__":#main method to run the flask app

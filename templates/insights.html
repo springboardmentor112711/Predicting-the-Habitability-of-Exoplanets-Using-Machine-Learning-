@@ -1,28 +1,45 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="container mt-5 text-light" id="insights-section"><!--mt-5 means margin-top: 50px-->
-  <h2 class="text-center mb-4">📊 Exoplanet Analytics Dashboard</h2>
-  
-  <div class="card bg-dark p-4 mb-4">
-    <h4>Feature importance</h4>
-    <div id="featureImportanceChart"></div>
-  </div>
 
-  <div class="card bg-dark p-4 mb-4"> <!--p-4 means padding: 40px-->
-    <h4>Habitability Score Distribution</h4>
-    <div id="scoreDistributionChart"></div>
-  </div>
 
-  <div class="card bg-dark p-4 mb-4">
-    <h4>Star-Planet Correlation Heatmap</h4>
-    <div id="correlationHeatmap"></div>
-  </div>
+<div class="page-bg insights-bg">
+    <div class="container min-vh-100 d-flex align-items-center justify-content-center">
+        <div class="glass-card insights-card w-100">
+            <h2 class="neon-title">📊 Exoplanet Analytics Insights</h2>
+            <p class="neon-subtitle">AI‑powered explainability & habitability intelligence</p>
 
-  <a href="/export" class="btn btn-success mt-3">Download Excel Report</a> <!--mt-3 means margin-top: 30px-->
-  <a href="/export-pdf" class="btn btn-danger mt-3 ms-2">Download PDF Report</a> <!--ms-2 means margin-left: 20px->
-  <!--btn-danger is bootstrap class for red button-->
+
+<div class="row g-4 mt-4">
+<div class="col-lg-6">
+<div class="insight-panel">
+<h4 class="panel-title">Feature Importance</h4>
+<div id="featureImportanceChart"></div>
 </div>
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script><!--Plotly JS-->
-  <script src="{{url_for('static',filename='js/dashboard.js')}}"></script><!--Custom JS for dashboard-->
-  {% endblock %} 
+</div>
+<div class="col-lg-6">
+<div class="insight-panel">
+<h4 class="panel-title">Habitability Score Distribution</h4>
+<div id="scoreDistributionChart"></div>
+</div>
+</div>
+<div class="col-12">
+<div class="insight-panel">
+<h4 class="panel-title">Star–Planet Correlation Heatmap</h4>
+<div id="correlationHeatmap"></div>
+</div>
+</div>
+</div>
+
+
+<div class="text-center mt-4">
+<a href="/export" class="neon-btn me-2">Download Excel Report</a>
+<a href="/export-pdf" class="neon-btn">Download PDF Report</a>
+</div>
+</div>
+</div>
+</div>
+
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

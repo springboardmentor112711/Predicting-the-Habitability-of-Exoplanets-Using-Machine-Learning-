@@ -7,13 +7,19 @@
     
     <!--Bootstrap CSS Loading-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
 
     <!--Normal CSS external sheet loading-->
     <link rel="stylesheet" href="{{url_for('static',filename='css/style.css')}}">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark"><!--Bootstrap Navbar-->
-        <div class="container-fluid"><!--Container for responsive padding-->
+
+    <!-- SPACE OVERLAY -->
+    <div class="space-overlay">
+        
+    </div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark"><!--Bootstrap Navbar where navbar-expand-lg means  -->
+        <div class="container-fluid"><!--Container  with full width for responsive padding-->
             <a class="navbar-brand" href="{{ url_for('home') }}">ExoHabit AI</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -48,3 +54,8 @@
 <script src="{{url_for('static', filename='js/main.js')}}"></script>
 </body>
 </html>
+
+<!--how to add footer-->
+<footer class="bg-dark text-white text-center py-3">
+    <p>&copy; 2026 ExoHabit AI. All rights reserved by Bhargavi Gangoor.</p>
+</footer>

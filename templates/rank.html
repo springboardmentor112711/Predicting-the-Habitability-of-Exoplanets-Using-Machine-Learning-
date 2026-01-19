@@ -1,23 +1,29 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container mt-5 text-light">
-  <h2 class="text-center mb-4">🏆 Ranked Exoplanets</h2>
 
-  <table class="table table-dark table-striped" id="rankTable">
-    <thead>
-      <tr>
-        <th>Rank</th>
-        <th>Radius</th>
-        <th>Mass</th>
-        <th>Temperature</th>
-        <th>Habitability Score</th>
-      </tr>
-    </thead>
-    <tbody id="rankTableBody"></tbody>
-  </table>
+<div class="page-bg rank-bg">
+    <div class="container min-vh-100 d-flex align-items-center justify-content-center">
+        <div class="glass-card rank-card">
+            <h2 class="neon-title">🏆 Top Habitable Exoplanets</h2>
+            <p class="neon-subtitle">AI‑Ranked Worlds by Habitability Score</p>
+
+            <div class="table-responsive mt-4">
+                <table class="table rank-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Radius</th>
+                            <th>Mass</th>
+                            <th>Temperature</th>
+                            <th>Habitability</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rankTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="{{ url_for('static', filename='js/rank.js') }}"></script>
 {% endblock %}
-
-<!-- what does endblock do?  -->

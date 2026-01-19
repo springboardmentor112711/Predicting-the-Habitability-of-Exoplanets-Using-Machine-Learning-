@@ -1,74 +1,55 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="container mt-5">
-    <div class="card bg-dark text-light p-4">
-        <h2 class="text-center mb-4">🔮 Predict Planet Habitability</h2>
-        <form id="predictForm">
-            <!-- REQUIRED FIELDS -->
-             <div class="row mb-3">
-                <div class="col-md-4">
-                    <label class="form-label">Radius *</label>
-                    <input type="number" step="any" class="form-control" id="radius" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Mass *</label>
-                    <input type="number" step="any" class="form-control" id="mass" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Temperature *</label>
-                    <input type="number" step="any" class="form-control" id="temp" required>
-                </div>
-            </div>
-            <!-- AUTOFILL CHECKBOX -->
-            <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" id="autofill">
-                <label class="form-check-label">
-                    Auto-fill remaining parameters
-                </label>
-            </div>
-            <!-- OPTIONAL FIELDS -->
-             <div id="advanced-fields">
-                <div class="row mb-3">
-                    <div class.col-md-4">
-                        <label class="form-label">Orbital Period</label>
-                        <input type="number" step="any" class="form-control" id="orbital_period">
+
+<div class="page-bg predict-bg">
+    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+        <div class="glass-card predict-card">
+            <h2 class="neon-title">🔮 Predict Planet Habitability</h2>
+            <p class="neon-subtitle">Enter planetary parameters to evaluate habitability using AI</p>
+
+            <form id="predictForm" class="mt-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <input type="number" step="any" id="radius" class="glass-input" placeholder="Radius *" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Distance from Star</label>
-                        <input type="number" step="any" class="form-control" id="distance_star">
+                        <input type="number" step="any" id="mass" class="glass-input" placeholder="Mass *" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Eccentricity</label>
-                        <input type="number" step="any" class="form-control" id="eccentricity">
+                        <input type="number" step="any" id="temp" class="glass-input" placeholder="Temperature *" required>
                     </div>
                 </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Semi-Major Axis</label>
-                        <input type="number" step="any" class="form-control" id="semi_major_axis">
+
+                <div class="form-check neon-check mt-4">
+                    <input class="form-check-input" type="checkbox" id="autofill">
+                    <label class="form-check-label">Auto‑fill advanced parameters using AI</label>
+                </div>
+
+                <div id="advanced-fields" class="mt-4">
+                    <div class="row g-3">
+                        <div class="col-md-4"><input type="number" step="any" id="orbital_period" class="glass-input" placeholder="Orbital Period"></div>
+                        <div class="col-md-4"><input type="number" step="any" id="distance_star" class="glass-input" placeholder="Distance From Star"></div>
+                        <div class="col-md-4"><input type="number" step="any" id="eccentricity" class="glass-input" placeholder="Eccentricity"></div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Star Temperature</label>
-                        <input type="number" step="any" class="form-control" id="star_temp">
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6"><input type="number" step="any" id="semi_major_axis" class="glass-input" placeholder="Semi Major Axis"></div>
+                        <div class="col-md-6"><input type="number" step="any" id="star_temp" class="glass-input" placeholder="Star Temperature"></div>
+                    </div>
+                    <div class="mt-3">
+                        <select id="star_type" class="glass-input">
+                            <option value="G">G‑Type Star</option>
+                            <option value="K">K‑Type Star</option>
+                            <option value="M">M‑Type Star</option>
+                        </select>
                     </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Star Type</label>
-                    <select class="form-control" id="star_type">
-                        <option value="G">G-Type</option>
-                        <option value="K">K-Type</option>
-                        <option value="M">M-Type</option>
-                    </select>
-                </div>
-            </div>
-            <button type="submit" class="btn btn-primary w-100" >
-                Predict Habitability
-            </button>
-        </form>
-        <!-- RESULT WILL APPEAR HERE -->
-         <div id="result" class="mt-4">
-         </div>
+
+                <button type="submit" class="neon-btn mt-4 w-100">Predict Habitability</button>
+            </form>
+
+            <div id="result" class="mt-4"></div>
+        </div>
     </div>
 </div>
+
 {% endblock %}

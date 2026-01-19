@@ -3,37 +3,54 @@ html, body {
     padding: 0;
     height: 100%;
     color: white;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Orbitron', sans-serif;
+}
+
+/* ===== SPACE GLASS OVERLAY ===== */
+.space-overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(0,0,0,0.35), rgba(0,0,0,0.85));
+    z-index: -1;
 }
 
 
-
-.space-bg {
-    min-height: 100vh;  /*  makes background fill full screen --vh is viewport height */
-    background-image: url("../imagie.gif");
-    background-size: cover;  /*fills entire area without stretching */
+/* ===== FULL ASTRONAUT HERO BACKGROUND ===== */
+.hero-bg{
+    min-height:80vh;
+    background:
+        linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.85)),
+        url("../imagie1.gif");
+    background-size: cover;
     background-position: center;
-    animation: moveStars 60s linear infinite; /*slow,smooth and professional */
+    background-attachment: fixed; /* Parallax effect */
+    
 }
 
-/*subtle background movement */
-/*Keyframes helps create animations by specifying the start and end states of the animation */
+
+/* Optional star animation layer */
+.space-bg {
+    min-height: 100vh;
+    background-image: url("../imagie1.gif");
+    background-size: cover;
+    background-position: center;
+    animation: moveStars 60s linear infinite;
+}
+
 @keyframes moveStars {
-    from {
-        background-position: 0 0;
-    }
-    to {
-        background-position: -2000px 1000px;
-    }
+    from { background-position: 0 0; }
+    to { background-position: -2000px 1000px; }
 }
 
-/*====LANDING SECTION====*/
+/* ===== LANDING SECTION ===== */
 .landing{
-    padding-top:140px;
+    padding-top:50px;
 }
-/* Title animation */
+
 .title{
     animation: fadeInUp 2s ease-out;
+    letter-spacing:4px;
+    text-shadow: 0 0 15px #00e5ff, 0 0 30px #00e5ff;
 }
 
 .subtitle{
@@ -41,27 +58,36 @@ html, body {
     animation:fadeInUp 2.5s ease-out;
 }
 
-/*Fade + slide animation */
 @keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/*=====FACT CARDS====*/
+/* ===== FACT CARDS ===== */
 .fact-card{
-    background: rgba(0, 0, 0, 0.65); /*semi-transparent black */
-    border-radius: 14px;
-    padding: 25px;
-    font-size:1.2rem;
-    margin: auto; /*centers the card */
-    max-width:700px;
+    background: rgba(5, 10, 20, 0.85);
+    border-radius: 22px;
+    padding: 45px;
+    font-size: 1.35rem;
+    margin: auto;
+    max-width: 900px;
+    color: #e9faff;
+    backdrop-filter: blur(10px);
+    box-shadow: 
+        0 0 25px rgba(0,229,255,0.4),
+        inset 0 0 15px rgba(0,229,255,0.15);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    border: 1px solid rgba(0,229,255,0.3);
+    overflow:auto;
 }
+
+.fact-card:hover{
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 
+        0 0 40px rgba(0,229,255,0.9),
+        inset 0 0 20px rgba(0,229,255,0.4);
+}
+
 
 /* ===== ACTION CARDS ===== */
 .action-card {
@@ -69,16 +95,12 @@ html, body {
     padding: 25px;
     border-radius: 18px;
     height: 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease; /*Smooth hover */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .action-card:hover {
-    transform: translateY(-8px); /* card lift effect*/
-    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-}
-/* Placeholder section styling */
-#ranking-section {
-    opacity: 0.85;
+    transform: translateY(-8px);
+    box-shadow: 0 0 30px rgba(0,229,255,0.6);
 }
 
 /* ===== FEATURE INSIGHTS ===== */
@@ -92,4 +114,207 @@ html, body {
 
 .insight-card:hover {
     transform: translateY(-5px);
+}
+
+.btn-sci {
+    background: linear-gradient(135deg, #00e5ff, #0077ff);
+    color: black;
+    padding: 14px 28px;
+    border-radius: 50px;
+    border: none;
+    font-weight: bold;
+    letter-spacing: 1px;
+    box-shadow: 0 0 15px rgba(0,229,255,0.6);
+    transition: all 0.3s ease;
+}
+
+.btn-sci:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 35px rgba(0,229,255,1);
+}
+
+.navbar-brand{
+    color:#00e5ff !important;
+    text-shadow: 0 0 12px #00e5ff;
+}
+
+.nav-link{
+    color:#d0f7ff !important;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover{
+    color:#00e5ff !important;
+    text-shadow: 0 0 10px #00e5ff;
+}
+
+/* ===== PREDICT PAGE BACKGROUND ===== */
+.predict-bg{
+    min-height:100vh;
+    background:
+        linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)),
+        url("../friends falling GIF by guille .gif");
+    background-size:cover;
+    background-position:center;
+}
+
+.page-bg{ padding-top:80px; }
+
+/* ===== GLASS CARD ===== */
+.glass-card{
+    background: rgba(5,10,20,0.85);
+    border-radius: 22px;
+    padding: 40px;
+    width: 100%;
+    max-width: 950px;
+    border: 1px solid rgba(0,229,255,0.4);
+    box-shadow: 0 0 40px rgba(0,229,255,0.4);
+    backdrop-filter: blur(12px);
+}
+
+/* ===== TEXT ===== */
+.neon-title{
+    text-align:center;
+    color:#00e5ff;
+    text-shadow:0 0 15px #00e5ff;
+    letter-spacing:3px;
+}
+
+.neon-subtitle{
+    text-align:center;
+    opacity:0.8;
+}
+
+/* ===== INPUTS ===== */
+.glass-input{
+    width:100%;
+    padding:14px 18px;
+    border-radius:14px;
+    background: rgba(0,0,0,0.6);
+    border:1px solid rgba(0,229,255,0.4);
+    color:white;
+    outline:none;
+}
+
+.glass-input:focus{
+    box-shadow:0 0 15px rgba(0,229,255,0.8);
+}
+
+/* ===== CHECKBOX ===== */
+.neon-check label{ color:#9ff5ff; }
+
+/* ===== BUTTON ===== */
+.neon-btn{
+    background: linear-gradient(135deg,#00e5ff,#0077ff);
+    border:none;
+    padding:15px;
+    border-radius:50px;
+    font-weight:bold;
+    letter-spacing:2px;
+    box-shadow:0 0 25px rgba(0,229,255,0.7);
+}
+
+.neon-btn:hover{ transform:scale(1.05); }
+
+/* ===== RANK PAGE BACKGROUND ===== */
+/* ===== BOOTSTRAP OVERRIDE: TRUE TRANSPARENT GLASS TABLE ===== */
+/* ===============================
+   RANK PAGE – FINAL SCI-FI GLASS UI
+   =============================== */
+
+.rank-bg{
+    min-height:100vh;
+    background:
+        linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.95)),
+        url("../floating astronaut.gif");
+    background-size:cover;
+    background-position:center;
+}
+
+/* CARD */
+.rank-card{
+    max-width:1100px;
+}
+
+/* TABLE RESET */
+.rank-table,
+.rank-table thead,
+.rank-table tbody,
+.rank-table tr,
+.rank-table th,
+.rank-table td{
+    background: transparent !important;
+}
+
+/* HEADER */
+.rank-table th{
+    background: rgba(0,229,255,0.08) !important;
+    border:1px solid rgba(0,229,255,0.6) !important;
+    color:#00e5ff !important;
+    padding:18px;
+    text-transform:uppercase;
+    letter-spacing:2px;
+    backdrop-filter: blur(2px);
+}
+
+/* ROWS */
+.rank-table td{
+    background: rgba(0,229,255,0.05) !important;
+    border:1px solid rgba(0,229,255,0.2) !important;
+    padding:18px;
+    color:#e9faff !important;
+    text-shadow: 0 0 8px rgba(0,229,255,0.6);
+}
+
+/* HOVER */
+.rank-table tbody tr:hover td{
+    background: rgba(0,229,255,0.18) !important;
+    box-shadow: inset 0 0 15px rgba(0,229,255,0.8);
+}
+
+/* RANK COLUMN */
+.rank-table td:first-child{
+    color:#00e5ff !important;
+    font-weight:bold;
+    text-shadow:0 0 12px #00e5ff;
+}
+
+/* ===============================
+INSIGHTS PAGE – SCI‑FI CONTROL ROOM
+=============================== */
+
+
+.insights-bg{
+min-height:100vh;
+background:
+linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.95)),
+url("../imagie.gif");
+background-size:cover;
+background-position:center;
+}
+
+
+.insights-card{ max-width:1200px; }
+
+
+.insight-panel{
+background: rgba(5,10,20,0.85);
+border-radius: 20px;
+padding: 24px;
+border:1px solid rgba(0,229,255,0.4);
+box-shadow:0 0 30px rgba(0,229,255,0.4);
+}
+
+
+.panel-title{
+color:#00e5ff;
+text-shadow:0 0 12px #00e5ff;
+margin-bottom:10px;
+letter-spacing:2px;
+}
+
+
+/* Plotly dark theme alignment */
+#featureImportanceChart, #scoreDistributionChart, #correlationHeatmap{
+min-height:320px;
 }

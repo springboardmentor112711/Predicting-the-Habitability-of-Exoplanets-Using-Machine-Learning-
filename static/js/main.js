@@ -95,3 +95,30 @@ function displayResult(data) {
         </div>
     `;
 }
+
+async function loadFactsCarousel(){
+    const res = await fetch("/exoplanet-facts");
+    const facts = await res.json();
+
+    const container = document.getElementById("factsContainer");
+    container.innerHTML = "";
+
+    facts.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "carousel-item" + (index === 0 ? " active" : "");
+
+        div.innerHTML = `
+            <div class="fact-card">
+                <h4>${item.title}</h4>
+                <p>${item.fact}</p>
+                <div class="mt-3">
+                    <a href="/predict" class="btn btn-primary">Predict Habitability</a>
+                    <a href="/insights" class="btn btn-outline-info">View Insights</a>
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+loadFactsCarousel();

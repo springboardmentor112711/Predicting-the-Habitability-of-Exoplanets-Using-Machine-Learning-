@@ -1,0 +1,14 @@
+[
+  {"id":1,"title":"Beyond Our Solar System","fact":"🌍 Exoplanets are planets that orbit stars outside our Solar System — over 6,000 have already been discovered!"},
+  {"id":2,"title":"Hidden Earths","fact":"🔭 About 1 in 5 Sun-like stars may host an Earth-sized planet in the habitable zone."},
+  {"id":3,"title":"Extreme Worlds","fact":"🪐 Some exoplanets are 30× heavier than Jupiter, while others are lighter than our Moon."},
+  {"id":4,"title":"Our Nearest Neighbor","fact":"⭐ The closest exoplanet, Proxima Centauri b, is just 4.2 light-years away."},
+  {"id":5,"title":"The Goldilocks Zone","fact":"🌡️ Planets in the habitable zone can support liquid water — a key ingredient for life."},
+  {"id":6,"title":"Lonely Wanderers","fact":"🌌 Rogue planets drift through space without a star — billions may exist in our galaxy."},
+  {"id":7,"title":"Alien Skies","fact":"☁️ Some exoplanets have glass rain, iron clouds, and temperatures hotter than lava."},
+  {"id":8,"title":"Cosmic Detectives","fact":"🔬 Scientists find exoplanets by watching stars dim or wobble as planets pass by."},
+  {"id":9,"title":"James Webb Telescope","fact":"🚀 JWST can analyze exoplanet atmospheres for signs of water, carbon dioxide, and life."},
+  {"id":10,"title":"Multiple Suns","fact":"🌠 Some exoplanets orbit two stars — imagine double sunsets!"},
+  {"id":11,"title":"Super Earths","fact":"🌍 Super-Earths are rocky planets bigger than Earth but smaller than Neptune."},
+  {"id":12,"title":"Are We Alone?","fact":"👽 Every exoplanet discovered brings us closer to answering the biggest question: Are we alone?"}
+]

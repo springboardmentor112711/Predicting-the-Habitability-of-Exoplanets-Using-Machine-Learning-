@@ -1,41 +1,64 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!--LANDING CONTENT-->
-<div class="container text-center landing">
-<h1 class="display-4 title">ExoHabit AI</h1>
-<p class="lead subtitle">
-    Exploring the habitability of distant worlds
-</p>
-</div>
-<!--ROTATING FACTS SECTION-->
-<div class="container mt-5">
-    <!--carousel slide tells bootstrap its a carousel-->
-    <!--data-bs-ride starts auto start rotation-->
-    <div id="factsCarousel" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner text-center">
-            <!--carousel-item active is the first visible item,so exactly one item must be active at a given time-->
-            <div class="carousel-item active">
-                <div class="fact-card">
-                    🌍 Earth is the only known planet with surface liquid water.
-                </div>
-                </div>
-            <div class="carousel-item">
-                <div class="fact-card">
-                    🌡️ Temperature plays a major role in planetary habitability.
-                </div>
+
+<div class="hero-bg">
+
+    <!-- Overlay Content -->
+    <div class="hero-overlay">
+
+        <div class="container text-center landing">
+            <h1 class="display-4 title">ExoHabit AI</h1>
+            <p class="lead subtitle">Exploring the habitability of distant worlds</p>
+        </div>
+
+        <!-- Facts Carousel -->
+        <div class="container mt-5">
+            <div id="factsCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner text-center" id="factsContainer"></div>
+
+                <button class="carousel-control-prev" type="button" data-bs-target="#factsCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+
+                <button class="carousel-control-next" type="button" data-bs-target="#factsCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
             </div>
-            <div class="carousel-item">
-                <div class="fact-card">
-                    🪐 Most discovered exoplanets are larger than Earth.
+        </div>
+
+        <!-- Action Cards -->
+        <div class="container mt-5 mb-5">
+            <div class="row g-4 text-center">
+
+                <div class="col-md-4">
+                    <div class="action-card">
+                        <h4>Predict Habitability</h4>
+                        <p>Analyze exoplanets using AI.</p>
+                        <a href="/predict" class="btn btn-outline-light">Try Now</a>
+                    </div>
                 </div>
-            </div>
-            <div class="carousel-item">
-                <div class="fact-card">
-                    ⭐ Star type influences the habitable zone of a planet.
+
+                <div class="col-md-4">
+                    <div class="action-card">
+                        <h4>Rank Exoplanets</h4>
+                        <p>Compare worlds by habitability score.</p>
+                        <a href="/rank" class="btn btn-outline-light">View Rankings</a>
+                    </div>
                 </div>
+
+                <div class="col-md-4">
+                    <div class="action-card">
+                        <h4>Insights Dashboard</h4>
+                        <p>Explore model insights & analytics.</p>
+                        <a href="/insights" class="btn btn-outline-light">Open Dashboard</a>
+                    </div>
+                </div>
+
             </div>
-        </div>    
+        </div>
+
     </div>
 </div>
+
 {% endblock %}
