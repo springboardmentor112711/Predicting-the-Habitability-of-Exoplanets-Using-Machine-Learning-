@@ -1,0 +1,33 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Virtual environments (do NOT push your local env)
+venv/
+.venv/
+env/
+ENV/
+
+# Git metadata (local only)
+.git/
+
+# VS Code / IDE settings
+.vscode/
+.idea/
+
+# OS-specific junk
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Generated artifacts (can be recreated at runtime)
+static/top10_exoplanets.xlsx
+static/top10_exoplanets.pdf
+static/top10_exoplanets.csv
+static/plots/*.png

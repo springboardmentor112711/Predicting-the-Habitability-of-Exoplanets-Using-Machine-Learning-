@@ -1,0 +1,9 @@
+Flask
+gunicorn
+joblib
+numpy
+pandas
+scikit-learn
+matplotlib
+reportlab
+openpyxl

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ExoHabitAI – About the Mission</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #050608;
+            --bg-panel: rgba(20, 25, 40, 0.7);
+            --accent-primary: #00f2ff;
+            --accent-secondary: #7000ff;
+            --text-main: #ffffff;
+            --text-secondary: #a0aab5;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(112, 0, 255, 0.1), transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.1), transparent 40%);
+            color: var(--text-main);
+            margin: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Ambient Stars */
+        #star-container {
+            position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
+        }
+        
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration) linear infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.2; box-shadow: 0 0 0 transparent; }
+            100% { opacity: 1; box-shadow: 0 0 var(--glow) rgba(255, 255, 255, 0.8); }
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5 { font-family: 'Space Grotesk', sans-serif; }
+
+        /* Glass Components */
+        .glass-nav {
+            background: rgba(5, 6, 8, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 0;
+        }
+        .nav-link { color: var(--text-secondary) !important; font-weight: 500; transition: 0.3s; }
+        .nav-link:hover { color: var(--accent-primary) !important; text-shadow: 0 0 10px rgba(0,242,255,0.4); }
+
+        .glass-card {
+            background: rgba(10, 12, 16, 0.85);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+        }
+
+        .tech-pill {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+            display: inline-block;
+            margin: 0.2rem;
+            transition: 0.3s;
+        }
+        .tech-pill:hover {
+            background: rgba(0, 242, 255, 0.1);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            cursor: default;
+        }
+
+        .section-title {
+            color: var(--accent-secondary);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-outline-cosmic {
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-main);
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-outline-cosmic:hover { 
+            border-color: var(--accent-primary); 
+            box-shadow: 0 0 15px rgba(0,242,255,0.3); 
+            color: #fff; 
+        }
+
+        /* Animations */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeInUp 0.8s ease-out forwards; }
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+    </style>
+</head>
+
+<body>
+
+    <div id="star-container"></div>
+
+    <nav class="navbar navbar-expand-lg glass-nav fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-white" href="/" style="letter-spacing: 1px;">🌌 ExoHabitAI</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/#predict-section">Analysis</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/dashboard">Visualization</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/about" style="color: var(--accent-primary) !important;">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5" style="margin-top: 100px;">
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                
+                <div class="glass-card fade-in mb-5">
+                    <h1 class="display-4 fw-bold mb-4">The Mission</h1>
+                    <p class="lead" style="color: var(--text-secondary); line-height: 1.8;">
+                        <strong class="text-white">ExoHabitAI</strong> is an advanced machine learning platform designed to evaluate the potential habitability of distant exoplanets. 
+                        By analyzing critical telemetry data—such as planetary radius, orbital period, and stellar metallicity—our algorithms classify celestial bodies based on their likelihood to support life.
+                    </p>
+                    <p style="color: var(--text-secondary);">
+                        Humanity's search for a second home requires filtering through billions of candidates. ExoHabitAI automates this discovery process, bridging the gap between raw astronomical data and actionable scientific insight.
+                    </p>
+                </div>
+
+                <div class="glass-card fade-in delay-1 mb-5">
+                    <h3 class="section-title">🚀 Architecture & Technology</h3>
+                    <p class="mb-4" style="color: var(--text-secondary);">
+                        Built with a robust Python backend and a responsive, data-driven frontend, this project leverages modern AI frameworks to deliver real-time predictions.
+                    </p>
+                    
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <span class="tech-pill">Python 3.9+</span>
+                        <span class="tech-pill">Flask</span>
+                        <span class="tech-pill">Scikit-Learn</span>
+                        <span class="tech-pill">Pandas</span>
+                        <span class="tech-pill">Matplotlib (Agg)</span>
+                        <span class="tech-pill">Bootstrap 5</span>
+                        <span class="tech-pill">Vanilla JS</span>
+                    </div>
+
+                    <div class="row g-4 mt-2">
+                        <div class="col-md-6 border-end" style="border-color: var(--glass-border) !important;">
+                            <h5 style="color: var(--accent-primary);">The Algorithm</h5>
+                            <p class="small text-secondary">
+                                Utilizes a <strong>Random Forest Classifier</strong> trained on confirmed exoplanet data from NASA archives. The model evaluates non-linear relationships between 7 key stellar and planetary features.
+                            </p>
+                        </div>
+                        <div class="col-md-6 ps-md-4">
+                            <h5 style="color: var(--accent-primary);">The Data</h5>
+                            <p class="small text-secondary">
+                                Processing real-world datasets including parameters like Equilibrium Temperature, Stellar Metallicity, and Orbital Semi-Major Axis to determine habitability scores.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card fade-in delay-2 mb-5">
+                    <h3 class="section-title">📊 Dataset Information</h3>
+                    <p class="mb-4" style="color: var(--text-secondary);">
+                        The foundation of our analysis is the <strong>Confirmed Exoplanet Dataset</strong>, a vast archive of validated extrasolar planets sourced from mission data (Kepler, TESS, etc.).
+                    </p>
+                    
+                    <div class="row g-4 text-center">
+                        <div class="col-md-4">
+                            <h2 style="color: var(--accent-primary); font-weight: 700;">5,500+</h2>
+                            <p class="small text-secondary text-uppercase fw-bold">Confirmed Planets</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h2 style="color: var(--accent-primary); font-weight: 700;">30+</h2>
+                            <p class="small text-secondary text-uppercase fw-bold">Telemetry Features</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h2 style="color: var(--accent-primary); font-weight: 700;">1995-2024</h2>
+                            <p class="small text-secondary text-uppercase fw-bold">Discovery Years</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top" style="border-color: var(--glass-border) !important;">
+                        <p class="small text-secondary mb-0">
+                            <strong>Dataset:</strong> <code>Confirmed Exoplanet (Planetary System).csv</code><br>
+                            Includes high-precision measurements of planetary mass, radius, derived equilibrium temperatures, and host star properties directly utilized by our Random Forest classifier.
+                        </p>
+                        <div class="mt-3">
+                            <a href="/download_dataset" class="btn btn-sm btn-outline-light" style="border-radius: 50px; font-size: 0.8rem; border-color: var(--glass-border);">
+                                📥 Download Source CSV
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center fade-in delay-3">
+                    <h5 class="mb-4" style="color: var(--text-secondary);">Ready to explore?</h5>
+                    <a href="/" class="btn-outline-cosmic me-3">Start Analysis</a>
+                    <a href="/dashboard" class="btn-outline-cosmic">View Dashboard</a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Minimal Starfield
+        function createStars() {
+            const container = document.getElementById('star-container');
+            const count = 100;
+            for (let i = 0; i < count; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const size = Math.random() * 2;
+                
+                star.style.left = x + '%';
+                star.style.top = y + '%';
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+                star.style.setProperty('--glow', size * 2 + 'px');
+                container.appendChild(star);
+            }
+        }
+        createStars();
+    </script>
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ExoHabitAI – Exoplanet Habitability Predictor</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #050608;
+            --bg-panel: rgba(20, 25, 40, 0.7);
+            --accent-primary: #00f2ff;
+            --accent-secondary: #7000ff;
+            --text-main: #ffffff;
+            --text-secondary: #a0aab5;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(112, 0, 255, 0.15), transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(0, 242, 255, 0.1), transparent 40%);
+            color: var(--text-main);
+            margin: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Ambient Stars & Effects */
+        #star-container {
+            position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
+        }
+        
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration) linear infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.2; box-shadow: 0 0 0 transparent; }
+            100% { opacity: 1; box-shadow: 0 0 var(--glow) rgba(255, 255, 255, 0.8); }
+        }
+
+        /* Shooting Stars */
+        .shooting-star {
+            position: absolute;
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, #fff, transparent);
+            border-radius: 50%;
+            box-shadow: 0 0 4px #6ddcff;
+            animation: shoot 4s linear infinite;
+            opacity: 0;
+            top: var(--top);
+            left: var(--left);
+            transform: rotate(-45deg);
+            animation-delay: var(--delay);
+        }
+
+        @keyframes shoot {
+            0% { transform: rotate(-45deg) translateX(0); opacity: 1; width: 0; }
+            5% { transform: rotate(-45deg) translateX(0); opacity: 1; width: 100px; }
+            20% { transform: rotate(-45deg) translateX(400px); opacity: 0; width: 0; }
+            100% { transform: rotate(-45deg) translateX(400px); opacity: 0; width: 0; }
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5 { font-family: 'Space Grotesk', sans-serif; }
+
+        /* Glass Components */
+        .glass-nav {
+            background: rgba(5, 6, 8, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 0;
+        }
+        .nav-link { color: var(--text-secondary) !important; font-weight: 500; transition: 0.3s; }
+        .nav-link:hover { color: var(--accent-primary) !important; text-shadow: 0 0 10px rgba(0,242,255,0.4); }
+
+        .glass-card {
+            background: rgba(10, 12, 16, 0.85); /* Darker background */
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s;
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+            margin-bottom: 2rem;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px -10px rgba(0,242,255,0.15);
+            border-color: rgba(0, 242, 255, 0.3);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 30%, var(--accent-primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeInDown 1s ease-out;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        /* Forms */
+        .form-label { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }
+        .form-control {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            background: rgba(255,255,255,0.07);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(0, 242, 255, 0.1);
+            color: #fff;
+        }
+
+        /* Buttons */
+        .btn-cosmic {
+            background: linear-gradient(90deg, var(--accent-secondary), var(--accent-primary));
+            color: #fff;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .btn-cosmic:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(112, 0, 255, 0.4);
+            color: #fff;
+        }
+        .btn-outline-cosmic {
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .btn-outline-cosmic:hover { border-color: var(--accent-primary); box-shadow: 0 0 15px rgba(0,242,255,0.3); color: #fff; }
+
+        /* Result */
+        .result-box {
+            margin-top: 2rem;
+            padding: 2rem;
+            background: rgba(0, 242, 255, 0.05);
+            border: 1px solid var(--accent-primary);
+            border-radius: 12px;
+            display: none;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .score-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            margin-top: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        .score-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            width: 0%;
+            transition: width 1.2s ease-out;
+            box-shadow: 0 0 10px var(--accent-primary);
+        }
+
+        /* Animations */
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .fade-in { animation: fadeIn 1s ease-out forwards; }
+
+        /* Table */
+        .table { 
+            --bs-table-bg: transparent; 
+            --bs-table-accent-bg: transparent; 
+            color: var(--text-secondary) !important; 
+            margin-bottom: 0; 
+        }
+        .table thead th { 
+            background-color: transparent !important;
+            border-bottom: 1px solid var(--glass-border); 
+            color: var(--accent-primary); 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            font-size: 0.85rem; 
+            letter-spacing: 1px; 
+        }
+        .table td { 
+            background-color: transparent !important;
+            border-bottom: 1px solid var(--glass-border); 
+            vertical-align: middle; 
+            padding: 1rem 0.5rem; 
+        }
+        .table-hover tbody tr:hover td { 
+            color: #fff; 
+            background-color: rgba(255,255,255,0.05) !important; 
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="star-container"></div>
+
+    <nav class="navbar navbar-expand-lg glass-nav fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-white" href="#" style="letter-spacing: 1px;">🌌 ExoHabitAI</a>
+             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#predict-section">Analysis</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/dashboard">Visualization</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <div class="container">
+            <h1>Predicting Life Beyond Earth</h1>
+            <p>Advanced AI-driven habitability assessment using stellar and planetary telemetry.</p>
+            <a href="#predict-section" class="btn-cosmic btn text-decoration-none">Initialize Prediction Model</a>
+            <div class="mt-4">
+                <a href="/dashboard" class="btn-outline-cosmic small">View Data Analytics Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container pb-5" id="predict-section">
+        <div class="glass-card mb-5 fade-in">
+            <h3 class="mb-4 fw-bold"><span style="color: var(--accent-primary)">01.</span> Planetary Telemetry Input</h3>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <label class="form-label">Planet Radius (Earth Units)</label>
+                    <input class="form-control" id="radius" placeholder="e.g. 1.2">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Planet Mass (Earth Units)</label>
+                    <input class="form-control" id="mass" placeholder="e.g. 0.9">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Orbital Period (Days)</label>
+                    <input class="form-control" id="period" placeholder="e.g. 365">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Equilibrium Temperature (K)</label>
+                    <input class="form-control" id="eq_temp" placeholder="e.g. 255">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Distance from Star (AU)</label>
+                    <input class="form-control" id="distance" placeholder="e.g. 1.0">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Stellar Temperature (K)</label>
+                    <input class="form-control" id="stellar_temp" placeholder="e.g. 5778">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">Stellar Metallicity [Fe/H]</label>
+                    <input class="form-control" id="metallicity" placeholder="e.g. 0.0">
+                </div>
+            </div>
+
+            <button class="btn-cosmic w-100 mt-4" onclick="predict()">Run Habitability Analysis</button>
+            
+            <div id="loading" class="text-center mt-3" style="display:none; color: var(--accent-primary);">
+                <div class="spinner-border spinner-border-sm" role="status"></div> Processing Telemetry Data...
+            </div>
+
+            <div id="result" class="result-box text-center">
+                <!-- JS populates this -->
+            </div>
+        </div>
+
+        <div class="glass-card fade-in">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold m-0"><span style="color: var(--accent-secondary)">02.</span> Top 10 Most Habitable Exoplanets</h3>
+                <button class="btn btn-danger btn-sm px-3" onclick="exportFile('/export/pdf')">
+                    Export PDF
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Planet Designation</th>
+                            <th>Habitability Score</th>
+                            <th>Classification</th>
+                        </tr>
+                    </thead>
+                    <tbody id="top10Table">
+                        <tr><td colspan="4" class="text-center p-3">Retrieving Latest Data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function exportFile(endpoint) {
+        fetch(endpoint)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert("Export failed: " + data.error);
+                    return;
+                }
+                if (!data.file) {
+                    alert("Export failed: No file returned by server.");
+                    return;
+                }
+                // Open the generated file; about:blank happens if file is undefined
+                window.open(data.file, "_blank");
+            })
+            .catch(error => {
+                alert("Export failed: " + error);
+            });
+        }
+        // Generate Stars
+        function createStars() {
+            const container = document.getElementById('star-container');
+            if (container) {
+                const count = 150; 
+                for (let i = 0; i < count; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    // Random properties
+                    const x = Math.random() * 100;
+                    const y = Math.random() * 100;
+                    const size = Math.random() * 2 + 1;
+                    const duration = Math.random() * 3 + 2;
+                    const glow = Math.random() * 5 + 2;
+                    star.style.left = x + '%';
+                    star.style.top = y + '%';
+                    star.style.width = size + 'px';
+                    star.style.height = size + 'px';
+                    star.style.setProperty('--duration', duration + 's');
+                    star.style.setProperty('--glow', glow + 'px');
+                    container.appendChild(star);
+                }
+                // Shooting stars
+                for (let i = 0; i < 3; i++) {
+                    const s = document.createElement('div');
+                    s.className = 'shooting-star';
+                    s.style.setProperty('--top', (Math.random() * 50) + '%');
+                    s.style.setProperty('--left', (Math.random() * 100) + '%');
+                    s.style.setProperty('--delay', (Math.random() * 10 + 2) + 's');
+                    container.appendChild(s);
+                }
+            }
+        }
+        createStars();
+
+        function predict() {
+            const data = {
+                planet_radius: parseFloat(document.getElementById('radius').value),
+                planet_mass: parseFloat(document.getElementById('mass').value),
+                orbital_period: parseFloat(document.getElementById('period').value),
+                equilibrium_temp: parseFloat(document.getElementById('eq_temp').value),
+                distance_from_star: parseFloat(document.getElementById('distance').value),
+                stellar_temp: parseFloat(document.getElementById('stellar_temp').value),
+                stellar_metallicity: parseFloat(document.getElementById('metallicity').value)
+            };
+
+            const resultBox = document.getElementById('result');
+            const loading = document.getElementById('loading');
+
+            if (Object.values(data).some(v => isNaN(v))) {
+                resultBox.innerHTML = "<span style='color: #ff5f5f;'>⚠️ Please enter valid numeric telemetry values.</span>";
+                resultBox.style.display = "block";
+                return;
+            }
+
+            loading.style.display = "block";
+            resultBox.style.display = "none";
+
+            fetch('/predict', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(res => {
+                loading.style.display = "none";
+                const confidence = res.confidence;
+                
+                // Store prediction data globally for visualization
+                window.predictionData = {
+                    ...res.input_data,
+                    score: res.score
+                };
+                
+                // Construct result HTML with "View Detailed Analysis" button
+                resultBox.innerHTML = `
+                    <h4 class="fw-bold mb-1" style="color: ${res.habitability === 'Habitable' ? '#00ffaa' : '#ff5f5f'}">${res.habitability.toUpperCase()} PLANET</h4>
+                    <p class="text-secondary mb-3">Confidence Level: <b>${confidence}%</b></p>
+                    <p>Habitability Index: <b>${res.score}</b></p>
+                    <div class="score-bar">
+                        <div class="score-fill" style="width: ${confidence}%; background: ${res.habitability === 'Habitable' ? '#00f2ff' : '#ff5f5f'}; box-shadow: 0 0 10px ${res.habitability === 'Habitable' ? '#00f2ff' : '#ff5f5f'};"></div>
+                    </div>
+                    <button class="btn btn-sm mt-3" style="background: linear-gradient(90deg, var(--accent-secondary), var(--accent-primary)); color: #fff; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600;" onclick="showDetailedAnalysis()">
+                        🔍 View Detailed Analysis
+                    </button>
+                `;
+                resultBox.style.display = "block";
+                resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            })
+            .catch(err => {
+                loading.style.display = "none";
+                resultBox.innerHTML = "<span style='color: #ff5f5f;'>Error connecting to analysis engine.</span>";
+                resultBox.style.display = "block";
+            });
+        }
+
+        // Load Top 10 Ranking
+        fetch('/top10_dynamic', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            let rows = "";
+            data.forEach((p, i) => {
+                let badgeColor = p.class.includes('Highly') ? '#00ffaa' : '#00f2ff';
+                rows += `
+                    <tr>
+                        <td style="font-weight: bold; color: var(--accent-secondary);">#${i + 1}</td>
+                        <td style="color: #fff; font-weight: 500;">${p.name}</td>
+                        <td style="color: var(--accent-primary); font-family: monospace; font-size: 1.1rem;">${p.score}</td>
+                        <td><span style="color: ${badgeColor}; font-size: 0.85rem; border: 1px solid ${badgeColor}; padding: 2px 8px; border-radius: 4px;">${p.class}</span></td>
+                    </tr>
+                `;
+            });
+            document.getElementById("top10Table").innerHTML = rows;
+        })
+        .catch(err => {
+            document.getElementById("top10Table").innerHTML = '<tr><td colspan="4" class="text-center p-3 text-danger">Failed to retrieve data stream.</td></tr>';
+        });
+
+        // Function to show detailed analysis
+        function showDetailedAnalysis() {
+            if (!window.predictionData) {
+                alert("Please run a prediction first!");
+                return;
+            }
+            
+            // Store data in sessionStorage to pass to dashboard
+            sessionStorage.setItem('userPrediction', JSON.stringify(window.predictionData));
+            
+            // Redirect to dashboard with analysis mode
+            window.location.href = '/dashboard?mode=analysis';
+        }
+    </script>
+
+</body>
+</html>

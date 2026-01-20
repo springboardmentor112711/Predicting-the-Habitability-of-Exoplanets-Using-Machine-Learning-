@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ExoHabitAI – Visualization Dashboard</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #050608;
+            --bg-panel: rgba(20, 25, 40, 0.7);
+            --accent-primary: #00f2ff;
+            --accent-secondary: #7000ff;
+            --text-main: #ffffff;
+            --text-secondary: #a0aab5;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(112, 0, 255, 0.15), transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(0, 242, 255, 0.1), transparent 40%);
+            color: var(--text-main);
+            margin: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Ambient Stars & Effects */
+        #star-container {
+            position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
+        }
+        
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration) linear infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.2; box-shadow: 0 0 0 transparent; }
+            100% { opacity: 1; box-shadow: 0 0 var(--glow) rgba(255, 255, 255, 0.8); }
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5 { font-family: 'Space Grotesk', sans-serif; }
+
+        /* Glass Components */
+        .glass-nav {
+            background: rgba(5, 6, 8, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 0;
+        }
+        .nav-link { color: var(--text-secondary) !important; font-weight: 500; transition: 0.3s; }
+        .nav-link:hover { color: var(--accent-primary) !important; text-shadow: 0 0 10px rgba(0,242,255,0.4); }
+
+        .glass-card {
+            background: rgba(10, 12, 16, 0.85);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            transition: transform 0.4s;
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+            margin-bottom: 2rem;
+        }
+        
+        /* Buttons */
+        .btn-cosmic {
+            background: linear-gradient(90deg, var(--accent-secondary), var(--accent-primary));
+            color: #fff;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-cosmic:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(112, 0, 255, 0.4);
+            color: #fff;
+        }
+        .btn-outline-cosmic {
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-main);
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+        .btn-outline-cosmic:hover { 
+            border-color: var(--accent-primary); 
+            box-shadow: 0 0 15px rgba(0,242,255,0.3); 
+            color: #fff; 
+        }
+
+        /* Images */
+        #plotImage {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            display: none; /* Hidden by default */
+            margin-top: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="star-container"></div>
+
+    <nav class="navbar navbar-expand-lg glass-nav fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-white" href="/" style="letter-spacing: 1px;">🌌 ExoHabitAI</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/#predict-section">Analysis</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/dashboard" style="color: var(--accent-primary) !important;">Visualization</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5" style="margin-top: 80px;">
+
+        <div class="text-center mb-5">
+            <h1 class="fw-bold mb-2">Analytics Dashboard</h1>
+            <p style="color: var(--text-secondary);">Visualize exoplanet feature correlations and model insights</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="glass-card text-center">
+            <h4 class="mb-4 text-start" style="color: var(--accent-primary); border-bottom: 1px solid var(--glass-border); padding-bottom: 10px;">Control Panel</h4>
+            
+            <!-- User Analysis Section (shown when user data is available) -->
+            <div id="userAnalysisPanel" style="display: none; margin-bottom: 2rem; padding: 1rem; background: rgba(112, 0, 255, 0.1); border: 1px solid var(--accent-secondary); border-radius: 12px;">
+                <h5 style="color: var(--accent-secondary); margin-bottom: 1rem;">🌟 Your Planet Analysis</h5>
+                <div class="d-flex flex-wrap gap-3 justify-content-center">
+                    <button class="btn-cosmic" onclick="loadUserPlot('/plot/user_comparison')">
+                        📊 Your Planet vs Others
+                    </button>
+                    <button class="btn-cosmic" onclick="loadUserPlot('/plot/user_feature_analysis')">
+                        📈 Feature Analysis
+                    </button>
+                    <button class="btn-cosmic" onclick="loadUserPlot('/plot/user_score_context')">
+                        🎯 Score Ranking
+                    </button>
+                </div>
+            </div>
+            
+            <h5 class="mb-3 text-start" style="color: var(--text-secondary); font-size: 0.9rem;">General Dataset Visualizations</h5>
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                <button class="btn-cosmic" onclick="loadPlot('/plot/feature_importance')">
+                    📊 Feature Importance
+                </button>
+                <button class="btn-cosmic" onclick="loadPlot('/plot/habitability_distribution')">
+                    📈 Score Distribution
+                </button>
+                <button class="btn-cosmic" onclick="loadPlot('/plot/star_planet_correlation')">
+                    🌟 Star–Planet Correlation
+                </button>
+                <button class="btn-outline-cosmic" onclick="exportFile('/export/excel')">
+                    📑 Export Data (Excel)
+                </button>
+            </div>
+        </div>
+
+        <!-- Plot Area -->
+        <div class="glass-card text-center" style="min-height: 400px;">
+            <h4 class="mb-4 text-start" style="color: var(--accent-primary); border-bottom: 1px solid var(--glass-border); padding-bottom: 10px;">Visualization Output</h4>
+            
+            <div id="placeholder-text" style="color: var(--text-secondary); padding: 50px;">
+                Select a visualization from the control panel above to render the analysis.
+            </div>
+            
+            <img id="plotImage" class="img-fluid">
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="/" class="btn-outline-cosmic">⬅ Back to Prediction Model</a>
+        </div>
+
+    </div>
+
+    <script>
+        // Starfield
+        function createStars() {
+            const container = document.getElementById('star-container');
+            const count = 150;
+            for (let i = 0; i < count; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const size = Math.random() * 3 + 1;
+                const duration = Math.random() * 3 + 2;
+                const delay = Math.random() * 5;
+                
+                star.style.left = x + '%';
+                star.style.top = y + '%';
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.setProperty('--duration', duration + 's');
+                star.style.animationDelay = delay + 's';
+                star.style.setProperty('--glow', size * 2 + 'px');
+                container.appendChild(star);
+            }
+        }
+        createStars();
+
+        // Plot Loader
+        function loadPlot(endpoint) {
+            const img = document.getElementById("plotImage");
+            const placeholder = document.getElementById("placeholder-text");
+            
+            // Show loading state if desired, or just opacity change
+            img.style.opacity = "0.5";
+
+            fetch(endpoint)
+                .then(response => {
+                    if (!response.ok) throw new Error("API not reachable");
+                    return response.json();
+                })
+                .then(data => {
+                    img.src = data.image + "?v=" + new Date().getTime();
+                    img.style.display = "inline-block";
+                    img.style.opacity = "1";
+                    if(placeholder) placeholder.style.display = "none";
+                })
+                .catch(error => {
+                    alert("Error loading plot: " + error);
+                    img.style.opacity = "1";
+                });
+        }
+
+        // Export Function
+        function exportFile(endpoint) {
+            fetch(endpoint)
+                .then(res => res.json())
+                .then(data => {
+                    // Start fix: Check for direct file property or error
+                    if (data.error) {
+                        alert("Export Failed: " + data.error);
+                    } else if (data.file) {
+                        try {
+                            const link = document.createElement('a');
+                            link.href = data.file;
+                            link.download = data.file.split('/').pop();
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        } catch (e) {
+                            alert("Download blocked by browser security. Please allow downloads.");
+                        }
+                    } else {
+                        alert("Export Failed: Unknown response from server");
+                    }
+                    // End fix
+                })
+                .catch(err => alert("Error during export: " + err));
+        }
+
+        // Load one plot by default
+        window.onload = function() {
+            // Check if user came from prediction page with analysis data
+            const urlParams = new URLSearchParams(window.location.search);
+            const analysisMode = urlParams.get('mode');
+            
+            if (analysisMode === 'analysis') {
+                const userData = sessionStorage.getItem('userPrediction');
+                if (userData) {
+                    window.userPredictionData = JSON.parse(userData);
+                    document.getElementById('userAnalysisPanel').style.display = 'block';
+                    document.getElementById('placeholder-text').innerHTML = 
+                        '<p style="color: var(--accent-secondary); font-size: 1.1rem;">🎉 Ready to analyze YOUR planet!</p>' +
+                        '<p style="color: var(--text-secondary);">Click any button above to see personalized visualizations.</p>';
+                    
+                    // Auto-load first user plot
+                    loadUserPlot('/plot/user_comparison');
+                }
+            } else {
+                // Default: load general feature importance
+                loadPlot('/plot/feature_importance');
+            }
+        };
+
+        // Function to load user-specific plots
+        function loadUserPlot(endpoint) {
+            if (!window.userPredictionData) {
+                alert("No prediction data available. Please run a prediction first from the homepage.");
+                return;
+            }
+
+            const img = document.getElementById("plotImage");
+            const placeholder = document.getElementById("placeholder-text");
+            
+            img.style.opacity = "0.5";
+            placeholder.style.display = "none";
+
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(window.userPredictionData)
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error("API not reachable");
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        alert("Error: " + data.error);
+                        img.style.opacity = "1";
+                        return;
+                    }
+                    img.src = data.image + "?v=" + new Date().getTime();
+                    img.style.display = "inline-block";
+                    img.style.opacity = "1";
+                })
+                .catch(error => {
+                    alert("Error loading plot: " + error);
+                    img.style.opacity = "1";
+                });
+        }
+    </script>
+</body>
+</html>
