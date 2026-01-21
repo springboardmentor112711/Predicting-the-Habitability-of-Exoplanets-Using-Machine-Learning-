@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ExoHabit AI | Rankings</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<a href="/" class="back-btn">← Back</a>
+
+<!-- Navbar (same as home) -->
+<nav class="navbar">
+    <div class="logo">ExoHabit AI</div>
+    <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/">Predict</a></li>
+        <li><a href="/rank">Rank</a></li>
+        <li><a href="/insights">Insights</a></li>
+    </ul>
+</nav>
+
+<div class="container">
+    <h1>🏆 Planet Habitability Rankings</h1>
+
+    <div class="prediction-result">
+        <table style="width:100%; border-collapse: collapse; margin-top:20px;">
+            <tr style="color:#00eaff;">
+                <th>Rank</th>
+                <th>Probability (%)</th>
+                <th>Planet Radius</th>
+                <th>Star Temp</th>
+                <th>Distance</th>
+            </tr>
+
+            {% for row in rows %}
+            <tr style="text-align:center;">
+                <td>{{ row[8] }}</td>
+                <td>{{ row[7] }}</td>
+                <td>{{ row[1] }}</td>
+                <td>{{ row[2] }}</td>
+                <td>{{ row[6] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

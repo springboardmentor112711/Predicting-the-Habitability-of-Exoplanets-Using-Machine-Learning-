@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ExoHabit AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- Hero Section -->
+<section class="home-hero" id="home">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            🌍 ExoHabit <span>AI</span>
+        </h1>
+
+        <p class="hero-subtitle">
+            AI-Powered Exoplanet Habitability Prediction & Insights
+        </p>
+
+        <div class="hero-features">
+            <div class="hero-card">🤖 Machine Learning Model</div>
+            <div class="hero-card">📊 SHAP Explainability</div>
+            <div class="hero-card">🪐 Exoplanet Ranking</div>
+            <div class="hero-card">🔭 Scientific Insights Dashboard</div>
+        </div>
+
+        <a href="#predict" class="hero-btn">
+            🚀 Start Prediction
+        </a>
+    </div>
+</section>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="logo">ExoHabit AI</div>
+    <ul class="nav-links">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#predict">Predict</a></li>
+        <li><a href="/rank">Rank</a></li>
+        <li><a href="/insights">Insights</a></li>
+    </ul>
+</nav>
+
+<!-- Main Container -->
+<div class="container" id="predict">
+    <h1>🪐 Predict Planet Habitability</h1>
+
+    <!-- Loading Indicator -->
+    <div id="loading-box" class="loading-box" style="display:none;">
+        <div class="spinner"></div>
+        <p>AI model analyzing data...</p>
+    </div>
+
+    <!-- Form -->
+    <form method="POST" action="/">
+        <div class="row">
+            <label for="pl_orbper">Orbital Period (days)</label>
+            <input type="number" id="pl_orbper" name="pl_orbper" step="any" required>
+        </div>
+
+        <div class="row">
+            <label for="pl_rade">Planet Radius (Earth radii)</label>
+            <input type="number" id="pl_rade" name="pl_rade" step="any" required>
+        </div>
+
+        <div class="row">
+            <label for="st_teff">Star Temperature (K)</label>
+            <input type="number" id="st_teff" name="st_teff" step="any" required>
+        </div>
+
+        <div class="row">
+            <label for="st_rad">Star Radius (Solar radii)</label>
+            <input type="number" id="st_rad" name="st_rad" step="any" required>
+        </div>
+
+        <div class="row">
+            <label for="st_mass">Star Mass (Solar mass)</label>
+            <input type="number" id="st_mass" name="st_mass" step="any" required>
+        </div>
+
+        <div class="row">
+            <label for="st_met">Star Metallicity</label>
+            <input type="number" id="st_met" name="st_met" step="any" required>
+        </div>
+
+        <div class="row">
+            <label for="sy_dist">System Distance (parsecs)</label>
+            <input type="number" id="sy_dist" name="sy_dist" step="any" required>
+        </div>
+
+        <button type="submit" id="predict-btn" disabled>
+            🔍 Predict
+        </button>
+    </form>
+
+    <!-- Prediction Result -->
+    {% if probability is not none %}
+    <div class="prediction-result">
+        <h2>{{ label }}</h2>
+
+        <div class="badge {{ badge_class }}">
+            {{ badge_text }}
+        </div>
+
+        <div class="progress-box">
+            <p>Habitability Probability: <strong>{{ probability }}%</strong></p>
+            <div class="progress-bar">
+                <div class="progress-fill" style="--percent: {{ probability }}%;"></div>
+            </div>
+        </div>
+
+        <!-- Export Report Button -->
+        <button onclick="window.print()" class="export-btn">
+            📄 Export Report
+        </button>
+
+        <!-- Reset Button -->
+        <form action="/" method="GET">
+            <button class="reset-btn">🔄 Reset</button>
+        </form>
+
+        <!-- Explainable AI Section -->
+        {% if explanation_html %}
+        <div class="explainability">
+            <h3>🔍 Why this prediction?</h3>
+            <div class="shap-plot">
+                {{ explanation_html|safe }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Scripts -->
+<script>
+    // Navbar active link highlighting
+    const sections = document.querySelectorAll("section, .container");
+    const navLinks = document.querySelectorAll(".navbar a");
+
+    window.addEventListener("scroll", () => {
+        let current = "";
+
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 100;
+            if (scrollY >= sectionTop) {
+                current = section.getAttribute("id");
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove("active");
+            if (link.getAttribute("href") === "#" + current) {
+                link.classList.add("active");
+            }
+        });
+    });
+
+    // Enable predict button only when all inputs filled
+    const inputs = document.querySelectorAll("input, select");
+    const predictBtn = document.getElementById("predict-btn");
+
+    function validateForm() {
+        let valid = true;
+        inputs.forEach(input => {
+            if (!input.value) valid = false;
+        });
+        predictBtn.disabled = !valid;
+    }
+
+    inputs.forEach(input => {
+        input.addEventListener("input", validateForm);
+    });
+
+    // Show loader on submit
+    const form = document.querySelector("form");
+    const loader = document.getElementById("loading-box");
+
+    form.addEventListener("submit", () => {
+        loader.style.display = "block";
+    });
+</script>
+<form action="/reset" method="post">
+    <button type="submit"
+        style="
+            background-color:#ff3333;
+            color:white;
+            padding:10px 18px;
+            border:none;
+            border-radius:6px;
+            font-weight:bold;
+            cursor:pointer;
+        ">
+        Reset All Predictions
+    </button>
+</form>
+
+</body>
+</html>

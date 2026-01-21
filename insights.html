@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insights | ExoHabit AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="dark-bg">
+<a href="/" class="back-btn">← Back</a>
+
+<div class="insights-page">
+    <div class="insights-container">
+    <h1 class="title">📊 Exoplanet Insights</h1>
+    <p class="subtitle">Visualization & Dashboard</p>
+
+    {% if plots.importance %}
+    <div class="card insights-card">
+        <h2>Feature Importance</h2>
+        <img src="data:image/png;base64,{{ plots.importance }}" class="img">
+    </div>
+    {% endif %}
+
+    {% if plots.distribution %}
+    <div class="card insights-card">
+        <h2>Habitability Score Distribution</h2>
+        <img src="data:image/png;base64,{{ plots.distribution }}" class="img">
+    </div>
+    {% endif %}
+
+    {% if plots.correlation %}
+    <div class="card insights-card">
+        <h2>Star–Planet Correlation</h2>
+        <img src="data:image/png;base64,{{ plots.correlation }}" class="img">
+    </div>
+    {% endif %}
+
+    {% if not plots %}
+    <p>No data available yet. Please make predictions first.</p>
+    {% endif %}
+</div>
+</div>
+
+</body>
+</html>
