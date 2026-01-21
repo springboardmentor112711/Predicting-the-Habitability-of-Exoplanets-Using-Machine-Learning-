@@ -1,7 +1,7 @@
 // EXOPLANET HABITABILITY EXPLORER - COMPLETE ANALYTICS EDITION
 // Version 3.1 - Fixed Global Analytics
 // IMPORTANT: This should match your Flask server port
-const API_BASE_URL = 'http://127.0.0.1:5000';
+const API_BASE_URL = "https://exoplanet-backend-yl6d.onrender.com";
 
 let currentPredictionData = null;
 let batchPredictionData = null;
