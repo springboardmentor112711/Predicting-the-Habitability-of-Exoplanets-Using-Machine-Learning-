@@ -33,7 +33,8 @@ ExoHabitatAI processes planetary and stellar parameters through trained ML model
 ExoHabitatAI/
 ├── app.py                  # Flask application
 ├── config.py               # Configuration
-├── requirements.txt        # Dependencies
+├── requirements.txt          # Dependencies
+├── .gitattributes      
 ├── .gitignore             # Git ignore rules
 │
 ├── api/                    # REST API
