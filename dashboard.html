@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Exoplanet Dashboard</h1>
+    {% if plot_url %}
+        <img src="data:image/png;base64,{{ plot_url }}" alt="Feature Importance">
+    {% else %}
+        <p>Plot unavailable</p>
+    {% endif %}
+</body>
+</html>
