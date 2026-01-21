@@ -1,0 +1,15 @@
+ExoHabitAI Data Collection Report
+Generated: 2025-12-17 22:37:01
+
+SUMMARY:
+- Data Source: Local CSV File
+- File Loaded: exoplanet.csv
+- Total Planets: 39,119
+- Total Columns: 95
+
+DATA QUALITY:
+- pl_name: 39,119 values (100.0%)
+- pl_rade: 26,979 values (69.0%)
+- pl_bmasse: 7,021 values (17.9%)
+- pl_orbper: 35,816 values (91.6%)
+- st_teff: 35,668 values (91.2%)
