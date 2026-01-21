@@ -79,24 +79,22 @@ StandardScaler
 
 ## Project Structure
 
-ExoHabitAI/
-├── app.py                  # Flask backend
-├── model/
-│   ├── model.joblib        # Trained Random Forest model
-│   └── scaler.joblib       # Fitted StandardScaler
-├── static/
-│   ├── css/
-│   ├── js/
-│   └── images/
-├── templates/
-│   └── index.html          # Main dashboard
-├── notebooks/
-│   └── model_training.ipynb # Model development & evaluation
-├── database/
-│   └── planets.db          # SQLite database
-├── requirements.txt
-└── README.md
-
+- `app.py`                        → Main Flask application  
+- `model/`  
+  - `model.joblib`                → Trained Random Forest model  
+  - `scaler.joblib`               → Fitted StandardScaler  
+- `static/`  
+  - `css/`                        → Custom styles  
+  - `js/`                         → JavaScript & Chart.js scripts  
+  - `images/`                     → Icons, logos, screenshots, etc.  
+- `templates/`  
+  - `index.html`                  → Main dashboard page  
+- `notebooks/`  
+  - `model_training.ipynb`        → Model development and evaluation notebook  
+- `database/`  
+  - `planets.db`                  → SQLite database  
+- `requirements.txt`              → List of Python dependencies  
+- `README.md`                     → This documentation file
 
 ## How to Run (Quick Start)
 
