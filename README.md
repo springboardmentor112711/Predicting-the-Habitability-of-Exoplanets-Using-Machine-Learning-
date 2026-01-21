@@ -133,3 +133,7 @@ The XGBoost model achieved the best performance:
 
 - NASA Exoplanet Archive for providing the dataset
 - Springboard Mentor Program for guidance and support
+
+## Deployment link
+
+https://exo-frontend.onrender.com/
