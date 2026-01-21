@@ -11,6 +11,8 @@ import pandas as pd
 import numpy as np
 import os
 import json
+# Get port from environment variable (Render provides this)
+PORT = int(os.environ.get('PORT', 5000))
 
 app = Flask(__name__)
 CORS(app)
@@ -861,4 +863,4 @@ if __name__ == '__main__':
     print("🚀 Server starting on http://127.0.0.1:5000")
     print("="*60 + "\n")
     
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', port=PORT, debug=False)
