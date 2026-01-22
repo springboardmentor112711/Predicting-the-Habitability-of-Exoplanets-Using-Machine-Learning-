@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+
+
 import joblib
 import numpy as np
 import sqlite3
@@ -98,10 +100,19 @@ def generate_correlation_base64():
     buf.seek(0)
     return base64.b64encode(buf.read()).decode('utf-8')
 
+from flask import send_from_directory
 
 @app.route("/")
 def home():
-    return jsonify({"message": "ExoHabitAI API is running"})
+    return send_from_directory("frontend", "page.html")
+
+@app.route("/css/<path:filename>")
+def css_files(filename):
+    return send_from_directory("frontend/css", filename)
+
+@app.route("/js/<path:filename>")
+def js_files(filename):
+    return send_from_directory("frontend/js", filename)
 
 
 @app.route('/analytics_charts', methods=['GET'])
