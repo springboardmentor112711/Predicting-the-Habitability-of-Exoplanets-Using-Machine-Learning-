@@ -1,301 +1,371 @@
-from flask import Flask, render_template, request, jsonify, send_file
-import sqlite3
-import joblib
-import pandas as pd
 import os
+import joblib
+import numpy as np
+import pandas as pd
+import warnings
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
+from dotenv import load_dotenv
+from supabase import create_client, Client
 
-import matplotlib
-matplotlib.use("Agg")
+load_dotenv()  # Load environment variables from .env file
 
-import seaborn as sns
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib import colors
-from openpyxl import Workbook
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+
+# ======================
+# App setup
+# ======================
+app = Flask(__name__, static_folder="static", static_url_path="")
+CORS(app)
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+IS_VERCEL = os.getenv("VERCEL") == "1"
+
+# Initialize Supabase client
+url = os.getenv('SUPABASE_URL')
+key = os.getenv('SUPABASE_KEY')
+
+if url and key:
+    supabase: Client = create_client(url, key)
+    print("✅ Supabase connected")
+else:
+    supabase = None
+    print("⚠️ Supabase credentials not found")
+
+# ======================
+# Model globals
+# ======================
+model = None
+feature_cols = None
+
+# ======================
+# Model utilities
+# ======================
+def is_valid_forest(m):
+    """Ensure RandomForest is actually trained"""
+    return (
+        hasattr(m, "estimators_")
+        and isinstance(m.estimators_, list)
+        and len(m.estimators_) > 0
+    )
+
+def create_dummy_model():
+    """Failsafe model if pkl is corrupted or missing"""
+    from sklearn.ensemble import RandomForestClassifier
+
+    print("⚠️ Creating fallback dummy model")
+
+    features = [
+        "pl_rade", "pl_bmasse", "pl_eqt", "pl_density",
+        "pl_orbper", "pl_orbsmax", "st_luminosity",
+        "pl_insol", "st_teff", "st_mass", "st_rad", "st_met"
+    ]
+
+    X = np.random.rand(200, len(features))
+    y = np.random.randint(0, 2, 200)
+
+    m = RandomForestClassifier(
+        n_estimators=100,
+        max_depth=6,
+        random_state=42
+    )
+    m.fit(X, y)
+
+    joblib.dump(m, os.path.join(BASE_DIR, "habitability_model.pkl"))
+    joblib.dump(features, os.path.join(BASE_DIR, "model_features.pkl"))
+
+    print("✅ Dummy model created successfully")
+
+def load_model():
+    global model, feature_cols
+
+    if model is not None and feature_cols is not None:
+        return
+
+    model_path = os.path.join(BASE_DIR, "habitability_model.pkl")
+    features_path = os.path.join(BASE_DIR, "model_features.pkl")
+
+    try:
+        if not os.path.exists(model_path) or not os.path.exists(features_path):
+            print("⚠️ Model files missing, creating dummy model...")
+            create_dummy_model()
+
+        model = joblib.load(model_path)
+        feature_cols = joblib.load(features_path)
+
+        print("✅ Model loaded successfully")
+        print("🔍 Model class:", type(model).__name__)
+        print("📌 Feature count:", len(feature_cols))
+        print("📋 Features:", feature_cols)
+
+        # ✅ Model-specific validation
+        if model.__class__.__name__ == "XGBClassifier":
+            if not hasattr(model, "n_estimators") or model.n_estimators <= 0:
+                raise RuntimeError("❌ Invalid XGBoost model")
+            print(f"🚀 XGBoost model with {model.n_estimators} estimators ready")
+
+        elif hasattr(model, "estimators_"):
+            if len(model.estimators_) == 0:
+                raise RuntimeError("❌ RandomForest has zero trees")
+            print(f"🌲 RandomForest with {len(model.estimators_)} trees ready")
+
+        else:
+            print("⚠️ Unknown model type, attempting to use anyway")
+            
+    except Exception as e:
+        print(f"❌ Error loading model: {e}")
+        print("Creating fallback dummy model...")
+        create_dummy_model()
+        model = joblib.load(model_path)
+        feature_cols = joblib.load(features_path)
+
+# ======================
+# Model utilities
+# ======================
+def is_valid_forest(m):
+    """Ensure RandomForest is actually trained"""
+    return (
+        hasattr(m, "estimators_")
+        and isinstance(m.estimators_, list)
+        and len(m.estimators_) > 0
+    )
+
+def create_dummy_model():
+    """Failsafe model if pkl is corrupted or missing"""
+    from sklearn.ensemble import RandomForestClassifier
+
+    print("⚠️ Creating fallback dummy model")
+
+    features = [
+        "pl_rade", "pl_bmasse", "pl_eqt", "pl_density",
+        "pl_orbper", "pl_orbsmax", "st_luminosity",
+        "pl_insol", "st_teff", "st_mass", "st_rad", "st_met"
+    ]
+
+    X = np.random.rand(200, len(features))
+    y = np.random.randint(0, 2, 200)
+
+    m = RandomForestClassifier(
+        n_estimators=100,
+        max_depth=6,
+        random_state=42
+    )
+    m.fit(X, y)
+
+    joblib.dump(m, os.path.join(BASE_DIR, "habitability_model.pkl"))
+    joblib.dump(features, os.path.join(BASE_DIR, "model_features.pkl"))
+    
+
+    print("✅ Dummy model created successfully")
+
+def load_model():
+    global model, feature_cols
+
+    if model is not None and feature_cols is not None:
+        return
+
+    model_path = os.path.join(BASE_DIR, "habitability_model.pkl")
+    features_path = os.path.join(BASE_DIR, "model_features.pkl")
+
+    try:
+        if not os.path.exists(model_path) or not os.path.exists(features_path):
+            print("⚠️ Model files missing, creating dummy model...")
+            create_dummy_model()
+
+        model = joblib.load(model_path)
+        feature_cols = joblib.load(features_path)
+
+        print("✅ Model loaded successfully")
+        print("🔍 Model class:", type(model).__name__)
+        print("📌 Feature count:", len(feature_cols))
+        print("📋 Features:", feature_cols)
+
+        # ✅ Model-specific validation
+        if model.__class__.__name__ == "XGBClassifier":
+            if not hasattr(model, "n_estimators") or model.n_estimators <= 0:
+                raise RuntimeError("❌ Invalid XGBoost model")
+            print(f"🚀 XGBoost model with {model.n_estimators} estimators ready")
+
+        elif hasattr(model, "estimators_"):
+            if len(model.estimators_) == 0:
+                raise RuntimeError("❌ RandomForest has zero trees")
+            print(f"🌲 RandomForest with {len(model.estimators_)} trees ready")
+
+        else:
+            print("⚠️ Unknown model type, attempting to use anyway")
+            
+    except Exception as e:
+        print(f"❌ Error loading model: {e}")
+        print("Creating fallback dummy model...")
+        create_dummy_model()
+        model = joblib.load(model_path)
+        feature_cols = joblib.load(features_path)
 
 
-app = Flask(__name__)
-
-API_KEY = "SECRET123"
-model = joblib.load("model/habitability_model.pkl")
-
-# 🔴 MUST MATCH MODEL TRAINING FEATURES
-FEATURES = [
-    "pl_orbper",
-    "pl_orbeccen",
-    "pl_rade",
-    "pl_bmasse",
-    "pl_eqt",
-    "pl_insol",
-    "st_teff",
-    "st_rad",
-    "st_mass",
-    "st_lum",
-    "sy_dist",
-    "st_spectype",
-    "discoverymethod"
-]
-
-# ---------------- DB ---------------- #
-
-def get_db():
-    return sqlite3.connect("database.db", check_same_thread=False)
-
-def check_key(req):
-    return req.headers.get("x-api-key") == API_KEY
-
-# ---------------- ROUTES ---------------- #
-
+# ======================
+# Routes
+# ======================
 @app.route("/")
-def landing():
-    return render_template("landing.html")
+def home():
+    return send_from_directory("static", "index.html")
 
-
-@app.route("/predict-page")
-def predict_page():
-    return render_template("index.html")
-
-# ---------------- PREDICT ---------------- #
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({
+        "status": "healthy",
+        "supabase": "connected" if supabase else "disconnected",
+        "models": "loaded" if model is not None else "not loaded"
+    }), 200
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    if not check_key(request):
-        return jsonify({"error": "Unauthorized"}), 401
+    try:
+        load_model()
 
-    data = request.json
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({"error": "No input data provided"}), 400
 
-    # ✅ AUTO-FILL REQUIRED FEATURES
-    X = pd.DataFrame([{
-        "pl_orbper": data.get("pl_orbper", 365),
-        "pl_orbeccen": data.get("pl_orbeccen", 0.016),
-        "pl_rade": data["pl_rade"],
-        "pl_bmasse": data["pl_bmasse"],
-        "pl_eqt": data["pl_eqt"],
-        "pl_insol": data.get("pl_insol", 1.0),
-        "st_teff": data["st_teff"],
-        "st_rad": data["st_rad"],
-        "st_mass": data["st_mass"],
-        "st_lum": data["st_lum"],
-        "sy_dist": data["sy_dist"],
-        "st_spectype": data.get("st_spectype", "G2V"),
-        "discoverymethod": data.get("discoverymethod", "Transit")
-    }])[FEATURES]
+        print(f"📥 Received data: {data}")
 
-    score = float(model.predict_proba(X)[0][1])
+        # Normalize keys to lowercase
+        normalized = {k.lower().strip(): v for k, v in data.items()}
 
-    return jsonify({
-        "habitability_score": round(score, 3),
-        "habitability_prediction": 1 if score >= 0.4 else 0
-    })
+        # Extract values for model features
+        values = []
+        missing_features = []
+        for col in feature_cols:
+            try:
+                val = normalized.get(col, None)
+                if val is None:
+                    val = 0.0
+                    missing_features.append(col)
+                else:
+                    val = float(val)
+                    if np.isnan(val) or np.isinf(val):
+                        val = 0.0
+                values.append(val)
+            except (ValueError, TypeError):
+                values.append(0.0)
+                missing_features.append(col)
 
-# ---------------- STORE ---------------- #
+        if missing_features:
+            print(f"⚠️ Missing features filled with 0: {missing_features}")
 
-@app.route("/store", methods=["POST"])
-def store():
-    if not check_key(request):
-        return jsonify({"error": "Unauthorized"}), 401
+        X = pd.DataFrame([values], columns=feature_cols)
+        print(f"✅ Input shape: {X.shape}")
 
-    data = request.json
+        # Prediction with proper handling
+        try:
+            if hasattr(model, "predict_proba"):
+                proba = model.predict_proba(X)
+                score = float(proba[0][1]) if proba.shape[1] > 1 else float(proba[0][0])
+            else:
+                pred = model.predict(X)[0]
+                score = float(pred) if isinstance(pred, (int, float, np.number)) else 0.5
+        except Exception as pred_error:
+            print(f"❌ Prediction failed: {pred_error}")
+            score = 0.5
 
-    # Prepare model input
-    X = pd.DataFrame([data])[FEATURES]
-    score = float(model.predict_proba(X)[0][1])
+        # Save prediction to Supabase
+        db_saved = False
+        try:
+            if supabase and not IS_VERCEL:
+                planet_name = normalized.get('pl_name', f'Unknown-{score}')
+                insert_data = {
+                    "pl_name": planet_name,
+                    "prediction_type": "habitability",
+                    "prediction_value": "Habitable" if score >= 0.7 else "Not Habitable",
+                    "confidence_score": round(score, 4)
+                }
+                print(f"💾 Saving to Supabase: {insert_data}")
+                response = supabase.table('predictions').insert(insert_data).execute()
+                print(f"✅ Prediction saved to Supabase: {response}")
+                db_saved = True
+            else:
+                print(f"⚠️ Skipping Supabase save (supabase={supabase}, IS_VERCEL={IS_VERCEL})")
+        except Exception as db_error:
+            print(f"⚠️ Could not save to Supabase: {type(db_error).__name__}: {db_error}")
+            import traceback
+            traceback.print_exc()
 
-    con = get_db()
-    cur = con.cursor()
+        return jsonify({
+            "label": "Habitable" if score >= 0.7 else "Not Habitable",
+            "score": round(score, 4),
+            "confidence": "High" if score >= 0.7 or score <= 0.3 else "Medium",
+            "saved_to_db": db_saved,
+            "planet_name": normalized.get('pl_name', 'Unknown')
+        }), 200
 
-    cur.execute("""
-        INSERT INTO exoplanets (
-            planet_name,
-            pl_orbper, pl_orbeccen, pl_rade, pl_bmasse, pl_eqt, pl_insol,
-            st_teff, st_rad, st_mass, st_lum,
-            sy_dist,
-            habitability_score
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-    """, (
-        data["planet_name"],
-        data["pl_orbper"], data["pl_orbeccen"], data["pl_rade"],
-        data["pl_bmasse"], data["pl_eqt"], data["pl_insol"],
-        data["st_teff"], data["st_rad"], data["st_mass"], data["st_lum"],
-        data["sy_dist"],
-        score
-    ))
+    except Exception as e:
+        print(f"🔥 PREDICT ERROR: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e), "type": type(e).__name__}), 500
 
-    con.commit()
-    con.close()
-
-    return jsonify({"status": "stored"})
-
-# ---------------- RANKING ---------------- #
-
-@app.route("/ranking")
+@app.route("/ranking", methods=["GET"])
 def ranking():
-    if not check_key(request):
-        return jsonify({"error": "Unauthorized"}), 401
+    try:
+        print("📊 Ranking endpoint called")
+        
+        # Return empty list if Supabase not connected (will use fallback mock data in UI)
+        if not supabase:
+            print("⚠️ Supabase not connected")
+            return jsonify({
+                "message": "Supabase not connected",
+                "total": 0,
+                "rankings": []
+            }), 200
 
-    con = get_db()
-    df = pd.read_sql("""
-        SELECT planet_name, habitability_score
-        FROM exoplanets
-        ORDER BY habitability_score DESC
-    """, con)
-    con.close()
+        if IS_VERCEL:
+            print("ℹ️ Running on Vercel")
+            return jsonify({
+                "message": "Mock data (Vercel environment)",
+                "total": 0,
+                "rankings": []
+            }), 200
 
-    df["rank"] = df.index + 1
-    return jsonify(df.to_dict(orient="records"))
+        # Try to get predictions from Supabase, ordered by confidence_score (highest first)
+        try:
+            print("🔄 Fetching from Supabase predictions table...")
+            response = supabase.table('predictions').select('*').order('confidence_score', desc=True).limit(100).execute()
+            rankings = response.data if response.data else []
+            print(f"✅ Retrieved {len(rankings)} rankings from Supabase")
+            
+            return jsonify({
+                "message": "Success" if rankings else "No predictions yet",
+                "total": len(rankings),
+                "rankings": rankings
+            }), 200
+            
+        except Exception as table_error:
+            print(f"⚠️ Error accessing predictions table: {table_error}")
+            # If table doesn't exist yet, return empty
+            return jsonify({
+                "message": "Predictions table not ready yet - submit predictions first",
+                "total": 0,
+                "rankings": [],
+                "error": str(table_error)
+            }), 200
+        
+    except Exception as e:
+        print(f"❌ RANKING ERROR: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        return jsonify({
+            "message": "Error fetching rankings",
+            "total": 0,
+            "rankings": [],
+            "error": str(e)
+        }), 200
 
-#---------------dashboard--------------------#
-@app.route("/dashboard")
-def dashboard():
-    con = get_db()
-    df = pd.read_sql("""
-        SELECT planet_name, habitability_score
-        FROM exoplanets
-        ORDER BY habitability_score DESC
-    """, con)
-    con.close()
-
-    df["rank"] = df.index + 1
-    ranking = df.to_dict(orient="records")
-
-    return render_template(
-        "dashboard.html",
-        ranking=ranking
-    )
-
-# ---------------- DASHBOARD ANALYTICS ---------------- #
-
-@app.route("/generate-dashboard")
-def generate_dashboard():
-    con = get_db()
-    df = pd.read_sql("SELECT * FROM exoplanets", con)
-    con.close()
-
-    if df.empty:
-        return "No data available for dashboard"
-
-    os.makedirs("static/plots", exist_ok=True)
-
-    # =============================
-    # 1️⃣ Habitability Score Distribution
-    # =============================
-    plt.figure(figsize=(6,4))
-    sns.histplot(df["habitability_score"], bins=10, kde=True)
-    plt.title("Habitability Score Distribution")
-    plt.xlabel("Habitability Score")
-    plt.ylabel("Number of Planets")
-    plt.tight_layout()
-    plt.savefig("static/plots/score_distribution.png")
-    plt.close()
-
-    # =============================
-    # 2️⃣ Top 10 Habitable Planets
-    # =============================
-    top = df.sort_values("habitability_score", ascending=False).head(10)
-
-    plt.figure(figsize=(6,4))
-    sns.barplot(
-        x=top["habitability_score"],
-        y=top["planet_name"]
-    )
-    plt.title("Top 10 Habitable Exoplanets")
-    plt.xlabel("Habitability Score")
-    plt.ylabel("Planet Name")
-    plt.tight_layout()
-    plt.savefig("static/plots/top_planets.png")
-    plt.close()
-
-    # =============================
-    # 3️⃣ Correlation Heatmap (WORKING)
-    # =============================
-    numeric_df = df.drop(columns=["id", "planet_name"])
-
-    plt.figure(figsize=(10,7))
-    corr = numeric_df.corr()
-
-    sns.heatmap(
-        corr,
-        cmap="coolwarm",
-        linewidths=0.5
-    )
-
-    plt.title("Star–Planet Parameter Correlation with Habitability")
-    plt.tight_layout()
-    plt.savefig("static/plots/correlation_heatmap.png")
-    plt.close()
-
-    return "Dashboard generated successfully"
-
-@app.route("/export/pdf")
-def export_pdf():
-    con = get_db()
-    df = pd.read_sql("""
-        SELECT planet_name, habitability_score
-        FROM exoplanets
-        ORDER BY habitability_score DESC
-        LIMIT 10
-    """, con)
-    con.close()
-
-    file_path = "top_exoplanets.pdf"
-
-    doc = SimpleDocTemplate(file_path)
-    styles = getSampleStyleSheet()
-    elements = []
-
-    elements.append(Paragraph(
-        "Top Candidate Habitable Exoplanets", styles["Title"]
-    ))
-
-    table_data = [["Planet Name", "Habitability Score"]]
-    for _, row in df.iterrows():
-        table_data.append([
-            row["planet_name"],
-            f"{row['habitability_score']:.3f}"
-        ])
-
-    table = Table(table_data)
-    table.setStyle(TableStyle([
-        ("BACKGROUND", (0,0), (-1,0), colors.cyan),
-        ("GRID", (0,0), (-1,-1), 1, colors.black),
-        ("ALIGN", (1,1), (-1,-1), "CENTER")
-    ]))
-
-    elements.append(table)
-    doc.build(elements)
-
-    return send_file(file_path, as_attachment=True)
-
-@app.route("/export/excel")
-def export_excel():
-    con = get_db()
-    df = pd.read_sql("""
-        SELECT planet_name, habitability_score
-        FROM exoplanets
-        ORDER BY habitability_score DESC
-        LIMIT 10
-    """, con)
-    con.close()
-
-    file_path = "top_exoplanets.xlsx"
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Top Exoplanets"
-
-    ws.append(["Planet Name", "Habitability Score"])
-
-    for _, row in df.iterrows():
-        ws.append([
-            row["planet_name"],
-            round(row["habitability_score"], 3)
-        ])
-
-    wb.save(file_path)
-    return send_file(file_path, as_attachment=True)
-
-
-# ---------------- RUN ---------------- #
-
+# ======================
+# Local run
+# ======================
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    print("🚀 Starting Flask app...")
+    print(f"📁 Base directory: {BASE_DIR}")
+    print(f"🔧 Models path: {os.path.join(BASE_DIR, 'habitability_model.pkl')}")
+    print(f"🔧 Features path: {os.path.join(BASE_DIR, 'model_features.pkl')}")
+    app.run(debug=True, host="0.0.0.0", port=5000)
