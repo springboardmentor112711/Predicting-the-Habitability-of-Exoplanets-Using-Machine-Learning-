@@ -1,10 +1,10 @@
 flask
-pandas
+flask-cors
 numpy
-scikit-learn
+pandas
 joblib
-matplotlib
-seaborn
-reportlab
-openpyxl
+scikit-learn
+xgboost
 gunicorn
+supabase
+python-dotenv
