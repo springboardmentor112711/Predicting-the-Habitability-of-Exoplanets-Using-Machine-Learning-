@@ -6,7 +6,9 @@ import json
 import pandas as pd
 import joblib #to load trained machine learning model
 import psycopg2 #importing psycopg2 to connect to postgresql database in supabase
+
 app=Flask(__name__)  #Flask app instance creation
+
 CORS(app) #Cross-Origin Resource Sharing to allow requests from different origins like frontend to backend
 model=joblib.load("habitability_trained.pkl") #loading the trained model:)
 cluster_model=joblib.load("cluster_model.pkl")
@@ -107,7 +109,7 @@ def predict():
             return jsonify({
                 "error": "Missing compulsory fields for autofill",
                 "missing_fields": missing
-            }), 400
+            }), 400 
 
         try:
             radius = float(data['radius'])
@@ -176,7 +178,6 @@ def predict():
             conn.close()
         except:
             pass
-# >>> END OF ADDED BLOCK <<<
     
     
     return jsonify({
@@ -198,7 +199,8 @@ def rank():
     df=df.fillna(0)
     df["rank"]=range(1,len(df)+1)
     return jsonify({
-        "planets": df.to_dict(orient="records")
+        "planets": df.to_dict(orient="records") #converting dataframe to list of dictionaries
+        #example: [{"id":1,"radius":1.5,...},{"id":2,"radius":2.0,...},...]
     })
 
 
@@ -222,6 +224,7 @@ def planet_detail(planet_id):
         return jsonify({"error": "Planet not found"}), 404
 
     return jsonify({"planet": df.iloc[0].to_dict()})
+#df.iloc[0].to_dict() converts the first row of dataframe to dictionary
     
     
 @app.route('/predict_input',methods=["POST"])#endpoint to validate user input for prediction
@@ -267,19 +270,20 @@ def get_planets():
 def feature_importance():
     try:
         xgb_model = model.steps[-1][1]   # extract real model
+        #[-1][1] means last step of pipeline and second element (the model itself)..not the pipeline object
 
-        importances = xgb_model.feature_importances_
-        feature_names = model.feature_names_in_
+        importances = xgb_model.feature_importances_ #example: [0.1,0.2,0.3,...] importance scores for each feature
+        feature_names = model.feature_names_in_ #example: ['radius','mass','temp',...] feature names used in training
 
         result = []
-        for f, i in zip(feature_names, importances):
+        for f, i in zip(feature_names, importances): #zipping feature names and importances together
             result.append({
                 "feature": f,
                 "importance": round(float(i), 4)
             })
 
         return jsonify({
-            "feature_importance": sorted(result, key=lambda x: x["importance"], reverse=True)
+            "feature_importance": sorted(result, key=lambda x: x["importance"], reverse=True) #sorting by importance descending
         })
 
     except Exception as e:
@@ -349,12 +353,14 @@ def export():
     #fetching top 10 exoplanets based on habitability probability
     conn.close()
     
-    wb=Workbook() #creating workbook object
-    ws=wb.active #getting active worksheet
+    wb=Workbook() #creating workbook object to hold excel data
+    ws=wb.active #getting active worksheet from workbook
     ws.title="Top 10 Habitable Exoplanets" #setting worksheet title
     
     ws.append(df.columns.tolist()) #adding header row with column names
     for row in df.itertuples(index=False): #iterating over dataframe rows without index
+        #itertuples returns namedtuples for each row
+        #example: Row(id=1,radius=1.5,mass=2.0,...)
         ws.append(list(row)) #adding each row to worksheet
         
     file_path = "static/top_10_habitable_exoplanets.xlsx" #file path to save excel file
