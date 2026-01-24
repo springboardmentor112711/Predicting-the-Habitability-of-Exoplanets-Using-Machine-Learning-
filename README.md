@@ -1,90 +1,106 @@
-# 🌌 ExoHabit AI  
-### AI-Powered Exoplanet Habitability Analysis & Explainability Platform
+# ExoHabit AI
+**AI-Driven Exoplanet Habitability Prediction & Explainability Platform**
 
-ExoHabit AI is a **full-stack machine learning web application** that predicts, ranks, and explains the habitability of exoplanets using astrophysical parameters.  
-The system combines **ML inference**, **data analytics**, and **interactive visualizations** to provide both **global insights** and **planet-specific explainability**.
-
----
-
-## 🚀 Features
-
-### 🔮 Habitability Prediction
-- Predicts whether an exoplanet is habitable
-- Outputs a **habitability probability score**
-- Supports:
-  - **Numeric input mode**
-  - **Comparative mode** (Earth / Mars / Venus references)
-  - **Autofill mode** using clustering
+ExoHabit AI is a full-stack machine learning web application that predicts and explains the habitability of exoplanets using astrophysical data.  
+It combines ML inference, statistical analysis, and interactive visualizations to support both global discovery and planet-level explainability.
 
 ---
 
-### 🏆 Planet Ranking
-- Ranks exoplanets based on habitability probability
-- Supports:
-  - Sorting (radius, mass, temperature, habitability)
-  - Search / filtering
-  - Pagination
-- Clickable rows redirect to **detailed insights**
+## Key Capabilities
+
+- Predicts habitability probability of exoplanets
+- Ranks planets by habitability score
+- Provides model explainability and insights
+- Interactive dashboards and comparisons
+- Exportable analytical reports (PDF / Excel)
 
 ---
 
-### 📊 Insights & Explainability
+## Machine Learning Pipeline
 
-#### All Planets Insights
-- Feature importance (model explainability)
-- Habitability score distribution
-- Star–planet correlation heatmap
-
-#### Single Planet Insights
-- Habitability progress bar
-- Risk classification (Low / Medium / High)
-- Parameter table
-- Planet vs Earth comparison chart
-
----
-
-### 📁 Data Export
-- Download **Top 10 Habitable Exoplanets** as:
-  - Excel report
-  - PDF report
-
----
-
-## 🧠 Machine Learning Overview
-
-- Model: **Scikit-learn Pipeline**
+- Model: Scikit-learn Pipeline
 - Preprocessing:
   - Missing value imputation
-  - Feature scaling (StandardScaler / MinMaxScaler)
-  - One-hot encoding for categorical features (star type)
-- Training data uses **Earth-relative astronomical units**
-- Explainability via:
+  - Feature scaling
+  - One-hot encoding (star type)
+- Training basis: Earth-relative astronomical units
+- Explainability:
   - Feature importance
   - Correlation analysis
 
 ---
 
-## 🏗️ Tech Stack
+## Application Features
+
+### Habitability Prediction
+- Numeric parameter input
+- Earth / Mars / Venus reference comparison
+- Autofill using clustering
+
+### Planet Ranking
+- Sort and filter by astrophysical parameters
+- Search and pagination
+- Click-through detailed insights
+
+### Insights and Explainability
+- Feature importance visualization
+- Habitability score distribution
+- Star–planet correlation heatmap
+- Planet vs Earth comparison
+
+---
+
+## Tech Stack
 
 ### Backend
 - Flask (Python)
 - Scikit-learn
-- Joblib
-- PostgreSQL (Supabase)
 - Pandas, NumPy
+- PostgreSQL (Supabase)
 
 ### Frontend
-- HTML + Jinja2 Templates
+- HTML + Jinja2
 - Bootstrap 5
 - Vanilla JavaScript
-- Plotly.js (visualizations)
-
-### Tools
-- Git & GitHub
-- VS Code
-- Jupyter Notebook
+- Plotly.js
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
+```
+ExoHabit-AI/
+├── app.py
+├── habitability_trained.pkl
+├── templates/
+├── static/
+├── cleaned-dataset-m1.ipynb
+└── requirements.txt
+```
+
+
+---
+
+## Input Parameters
+
+| Parameter | Unit |
+|---------|------|
+| Radius | Earth radii (R⊕) |
+| Mass | Earth masses (M⊕) |
+| Temperature | Kelvin |
+| Distance | AU |
+| Semi-major Axis | AU |
+| Eccentricity | Unitless |
+| Star Type | Spectral Class (M, K, G, F, A) |
+
+---
+
+## Run Locally
+
+```bash
+git clone https://github.com/your-username/ExoHabit-AI.git
+cd ExoHabit-AI
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+python app.py
