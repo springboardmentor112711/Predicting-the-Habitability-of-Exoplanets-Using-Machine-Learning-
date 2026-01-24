@@ -1,6 +1,6 @@
-import requests
-from bs4 import BeautifulSoup
-import json, os, re
+import requests 
+from bs4 import BeautifulSoup 
+import json, os, re #re is for regular expressions
 
 URL = "https://en.wikipedia.org/wiki/Exoplanet"
 
@@ -18,9 +18,9 @@ def scrape():
     #The requests.get() method is used to make a GET request to the specified URL and returns a Response object.
     print("Status:", res.status_code)
 
-    soup = BeautifulSoup(res.text, "html.parser")
+    soup = BeautifulSoup(res.text, "html.parser") #Parsing the HTML content of the response using BeautifulSoup.
 
-    paragraphs = soup.select("p")
+    paragraphs = soup.select("p") #Selecting all paragraph elements from the parsed HTML.
     print("Total paragraphs found:", len(paragraphs))
 
     facts = []
