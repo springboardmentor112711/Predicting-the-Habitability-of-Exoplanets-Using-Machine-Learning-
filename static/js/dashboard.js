@@ -1,3 +1,4 @@
+//Part 1 -- DOMContentLoaded + Initialization
 document.addEventListener("DOMContentLoaded", () => {
     const singleInsights = document.getElementById("singleInsights");
     const singlePlaceholder = document.getElementById("singlePlaceholder");
@@ -6,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const riskBadge = document.getElementById("riskBadge");
     const habitabilityReason = document.getElementById("habitabilityReason");
     const paramTable = document.getElementById("singlePlanetTable");
-    const modeRadios = document.querySelectorAll("input[name='insightsMode']");
+    const modeRadios = document.querySelectorAll("input[name='insightsMode']");//mode radio buttons for toggling to all panet insights or single planet
 
     const earthReference = {
         radius: 1,
@@ -20,26 +21,29 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     let currentPlanet = null;
-    const planetId = new URLSearchParams(window.location.search).get("planet_id");
+    const planetId = new URLSearchParams(window.location.search).get("planet_id");//check if a planet_id is provided in the URL
 
+
+    //Part 2 -- Mode Handling and Initial Load
     if (planetId) {
         loadSinglePlanet(planetId);
         document.getElementById("modeSingle").checked = true;
-        toggleMode("single");
+        toggleMode("single");//user came from rank page--single planet mode
     } else {
-        toggleMode("all");
+        toggleMode("all");//else show all insights mode
     }
 
-    modeRadios.forEach(radio => {
+    modeRadios.forEach(radio => { //when user clicks on mode radio buttons
         radio.addEventListener("change", (e) => {
             toggleMode(e.target.value);
         });
     });
 
+    //Part 3 -- Mode Toggle Function
     function toggleMode(mode) {
-        if (mode === "single") {
+        if (mode === "single") {//if single planet mode.hide all insights and show single planet insights or placeholder
             if (allInsights) allInsights.style.display = "none";
-            if (currentPlanet) {
+            if (currentPlanet) {//if we have already loaded a planet, show its insights
                 if (singleInsights) singleInsights.style.display = "flex";
                 if (singlePlaceholder) singlePlaceholder.style.display = "none";
             } else {
@@ -54,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (singlePlaceholder) singlePlaceholder.style.display = "none";
             if (allInsights) allInsights.style.display = "flex";
             // Force Plotly to recalculate chart sizes after showing
-            setTimeout(() => {
+            setTimeout(() => {//plotly resize after a short delay to ensure proper rendering
                 Plotly.Plots.resize("featureImportanceChart");
                 Plotly.Plots.resize("scoreDistributionChart");
                 Plotly.Plots.resize("correlationHeatmap");
@@ -64,7 +68,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadFeatureImportance();
     loadScoreDistribution();
-    loadCorrelations();
+    loadCorrelations();//run these functions after DOM is loaded
+
+    //Part 4 -- Data Loading and Rendering Functions
 
     async function loadSinglePlanet(id){
         try{
@@ -73,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if(!res.ok || !data.planet){
                 return;
             }
-            currentPlanet = data.planet;
+            currentPlanet = data.planet;//stores planet and renders UI
             renderSinglePlanet(currentPlanet);
         if (singlePlaceholder) singlePlaceholder.style.display = "none";
         }catch(err){
@@ -85,13 +91,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if(!singleInsights) return;
         singleInsights.style.display = "flex";
         const score = Number(p.habitability_probability || 0);
-        const pct = Math.max(0, Math.min(1, score)) * 100;
+        const pct = Math.max(0, Math.min(1, score)) * 100;//clamp between 0 and 100
         if(habitabilityBar){
             habitabilityBar.style.width = `${pct.toFixed(1)}%`;
             habitabilityBar.textContent = `${pct.toFixed(1)}%`;
         }
 
-        const risk = pct >= 66 ? "Low" : pct >= 33 ? "Medium" : "High";
+        const risk = pct >= 66 ? "Low" : pct >= 33 ? "Medium" : "High";//rule based classification
         if(riskBadge){
             riskBadge.textContent = risk;
             riskBadge.className = `badge ${risk === "Low" ? "bg-success" : risk === "Medium" ? "bg-warning text-dark" : "bg-danger"}`;
@@ -99,8 +105,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if(habitabilityReason){
             habitabilityReason.textContent = pct >= 50
-                ? "Why this planet is habitable: parameters align closely with known habitable ranges."
-                : "Why this planet is not habitable: parameters deviate from known habitable ranges.";
+                ? "Why this planet is habitable:  The parameters align closely with known habitable ranges."
+                : "Why this planet is not habitable: The parameters deviate from known habitable ranges.";
         }
 
         if(paramTable){
@@ -120,12 +126,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     <th class="text-info">${label}</th>
                     <td>${value ?? '--'}</td>
                 </tr>
-            `).join("");
+            `).join("");//dynamically create table rows
         }
 
         renderEarthComparison(p);
     }
 
+    //rendering planet vs earth comparison chart for single planet insights
     function renderEarthComparison(p) {
         const metrics = [
             { 
@@ -156,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
             name: "This Planet",
             type: "bar",
             marker: { color: "#00e5ff" }
-        };
+        };//two bar series--planet and earth
 
         const trace2 = {
             x: metrics.map(m => m.name),
@@ -173,11 +180,13 @@ document.addEventListener("DOMContentLoaded", () => {
             yaxis: { title: "Relative to Earth (× Earth)" }
         };
 
-        Plotly.newPlot("earthComparisonChart", [trace1, trace2], layout);
+        Plotly.newPlot("earthComparisonChart", [trace1, trace2], layout);//grouped  bar chart
     }
 
+
+    //Part 5 -- Visualization Loading Functions
     async function loadFeatureImportance() {
-        const res=await fetch("/feature-importance");
+        const res=await fetch("/feature-importance");//endpoint to get feature importance data
         const data=await res.json();
 
         const features=data.feature_importance.map(f => f.feature);
@@ -199,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
         Plotly.newPlot("featureImportanceChart",[trace],layout);
     }
 
-    async function loadScoreDistribution() {
+    async function loadScoreDistribution() {//fetches score distribution data and renders histogram
         const res=await fetch("/score-distribution");
         const data=await res.json();
 
@@ -217,7 +226,8 @@ document.addEventListener("DOMContentLoaded", () => {
         Plotly.newPlot("scoreDistributionChart",[trace],layout);
     }
 
-    async function loadCorrelations() {
+    async function loadCorrelations() {//fetches correlation matrix data and renders heatmap
+        //matrix from /correlations endpoint
         const res =await fetch("/correlations");
         const data=await res.json();
 
@@ -235,3 +245,13 @@ document.addEventListener("DOMContentLoaded", () => {
         Plotly.newPlot("correlationHeatmap",[trace],layout);
     }
 });
+
+//URL / User input
+//      ↓
+//JavaScript decides MODE
+//      ↓
+//Fetch backend data
+//      ↓
+//Transform data
+//      ↓
+//Render UI + Charts
