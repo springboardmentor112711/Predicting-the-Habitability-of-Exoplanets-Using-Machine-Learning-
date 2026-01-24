@@ -274,7 +274,7 @@ loadFactsCarousel(); //call the function to load facts when page loads
 //fetch() sends JSON
 //   ↓
 //Flask /predict
-   ↓
+//   ↓
 //ML model
 //   ↓
 //JSON response
