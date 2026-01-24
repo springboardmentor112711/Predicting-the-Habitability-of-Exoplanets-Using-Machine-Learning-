@@ -2,13 +2,13 @@
 {% block content %}
 
 <div class="page-bg predict-bg">
-    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="container d-flex justify-content-center align-items-center min-vh-100"><!--d-flex means display flex -->
         <div class="glass-card predict-card">
             <h2 class="neon-title">🔮 Predict Planet Habitability</h2>
             <p class="neon-subtitle">Enter planetary parameters to evaluate habitability using AI</p>
 
             <form id="predictForm" class="mt-4">
-                <div class="btn-group w-100" role="group" aria-label="Input mode toggle">
+                <div class="btn-group w-100" role="group" aria-label="Input mode toggle"><!--btn-group w-100 means button group with full width-->
                     <input type="radio" class="btn-check" name="inputMode" id="modeNumeric" value="numeric" checked>
                     <label class="btn btn-outline-info w-50" for="modeNumeric">Numeric Input</label>
                     <input type="radio" class="btn-check" name="inputMode" id="modeComparative" value="comparative">
@@ -16,7 +16,8 @@
                 </div>
 
                 <div id="numeric-fields" class="mt-4">
-                    <div class="row g-3">
+                    <div class="row g-3"><!--g-3 means gutters of size 3-->
+                        <!--gutters means spacing between columns-->
                         <div class="col-md-4">
                             <input type="number" step="any" id="radius" class="glass-input" placeholder="Radius *" required>
                         </div>
@@ -33,26 +34,26 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <select id="radiusComparative" class="glass-input" aria-label="Radius comparative">
-                                <option value="Earth">Radius: Earth</option>
-                                <option value="Venus">Radius: Venus</option>
-                                <option value="Mars">Radius: Mars</option>
-                                <option value="Jupiter">Radius: Jupiter</option>
-                            </select>
+                                <option value="Earth">Radius: Earth-like</option>
+                                <option value="Venus">Radius: Venus-like</option>
+                                <option value="Mars">Radius: Mars-like</option>
+                                <option value="Jupiter">Radius: Jupiter-like</option>
+                            </select><!---select is a dropdown menu-->
                         </div>
                         <div class="col-md-4">
                             <select id="massComparative" class="glass-input" aria-label="Mass comparative">
-                                <option value="Earth">Mass: Earth</option>
-                                <option value="Venus">Mass: Venus</option>
-                                <option value="Mars">Mass: Mars</option>
-                                <option value="Jupiter">Mass: Jupiter</option>
+                                <option value="Earth">Mass: Earth-like</option>
+                                <option value="Venus">Mass: Venus-like</option>
+                                <option value="Mars">Mass: Mars-like</option>
+                                <option value="Jupiter">Mass: Jupiter-like</option>
                             </select>
                         </div>
                         <div class="col-md-4">
                             <select id="tempComparative" class="glass-input" aria-label="Temperature comparative">
-                                <option value="Earth">Temperature: Earth</option>
-                                <option value="Venus">Temperature: Venus</option>
-                                <option value="Mars">Temperature: Mars</option>
-                                <option value="Jupiter">Temperature: Jupiter</option>
+                                <option value="Earth">Temperature: Earth-like</option>
+                                <option value="Venus">Temperature: Venus-like</option>
+                                <option value="Mars">Temperature: Mars-like</option>
+                                <option value="Jupiter">Temperature: Jupiter-like</option>
                             </select>
                         </div>
                     </div>
@@ -95,18 +96,18 @@
                             </div>
                             <div class="col-md-4">
                                 <select id="distance_star_comp" class="glass-input" aria-label="Distance from star comparative">
-                                    <option value="Earth">Distance From Star: Earth</option>
-                                    <option value="Venus">Distance From Star: Venus</option>
-                                    <option value="Mars">Distance From Star: Mars</option>
-                                    <option value="Jupiter">Distance From Star: Jupiter</option>
+                                    <option value="Earth">Distance From Star: Earth-like</option>
+                                    <option value="Venus">Distance From Star: Venus-like</option>
+                                    <option value="Mars">Distance From Star: Mars-like</option>
+                                    <option value="Jupiter">Distance From Star: Jupiter-like</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
                                 <select id="eccentricity_comp" class="glass-input" aria-label="Eccentricity comparative">
-                                    <option value="Earth">Eccentricity: Earth</option>
-                                    <option value="Venus">Eccentricity: Venus</option>
-                                    <option value="Mars">Eccentricity: Mars</option>
-                                    <option value="Jupiter">Eccentricity: Jupiter</option>
+                                    <option value="Earth">Eccentricity: Earth-like</option>
+                                    <option value="Venus">Eccentricity: Venus-like</option>
+                                    <option value="Mars">Eccentricity: Mars-like</option>
+                                    <option value="Jupiter">Eccentricity: Jupiter-like</option>
                                 </select>
                             </div>
                         </div>
