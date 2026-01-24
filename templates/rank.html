@@ -3,22 +3,23 @@
 
 <div class="page-bg rank-bg">
     <div class="container min-vh-100 d-flex align-items-center justify-content-center">
+        <!--d-flex means flexbox-->
         <div class="glass-card rank-card">
             <h2 class="neon-title">🏆 Top Habitable Exoplanets</h2>
             <p class="neon-subtitle">AI‑Ranked Worlds by Habitability Score</p>
 
-            <div class="fact-card my-3">
+            <div class="fact-card my-3"><!--my means margin on y-axis (top and bottom)-->
                 <div class="mb-3">
-                    <p class="mb-1 text-info text-center text-md-start">Total Planets Predicted:</p>
+                    <p class="mb-1 text-info text-center text-md-start">Total Planets Predicted:</p><!--text-md-start means text alignment start on medium screens and up-->
                     <h3 class="mb-0 text-center text-md-start" id="totalPlanets">0</h3>
                 </div>
                 <div class="mb-3">
                     <input id="rankSearch" type="text" class="glass-input" placeholder="Filter by radius, mass, or temperature">
                 </div>
                 <div>
-                    <div class="btn-group w-100 flex-wrap gap-2">
+                    <div class="btn-group w-100 flex-wrap gap-2"><!--gap means space between buttons and flex-wrap means allowing flex items to roll over next lines -->
                         <button class="btn btn-sci btn-sm active" data-sort="habitability_probability" data-label="Habitability">Habitability</button>
-                        <button class="btn btn-sci btn-sm" data-sort="radius" data-label="Radius">Radius</button>
+                        <button class="btn btn-sci btn-sm" data-sort="radius" data-label="Radius">Radius</button><!--data-sort is a custom attribute to store the sorting key, data-label is for display-->
                         <button class="btn btn-sci btn-sm" data-sort="temp" data-label="Temperature">Temperature</button>
                     </div>
                 </div>
