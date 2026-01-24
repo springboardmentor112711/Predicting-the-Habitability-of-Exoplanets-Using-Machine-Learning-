@@ -402,4 +402,5 @@ def exoplanet_facts():
 
 
 if __name__=="__main__":#main method to run the flask app
-    app.run(debug=True)
+    port=int(os.getenv("PORT",5000)) #getting port from environment variable or default to 5000
+    app.run(host="0.0.0.0",port=port)
