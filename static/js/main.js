@@ -1,6 +1,9 @@
 // ===== PLANETARY REFERENCE DATA (used for comparative mode) ===== //
-const planetReference = {
-    Earth: {
+//this is used to store planet ref data,control ui behavior,collect user inputs and recieve response
+
+const planetReference = { //const means constant and planetReference is an object storing data about different planets
+    //like Map<string, object>
+    Earth: { //Earth is the key and its value is another object with various properties
         radius: 1,
         mass: 1,
         temp: 288,
@@ -43,32 +46,36 @@ const planetReference = {
         eccentricity: 0.0489,
         semi_major_axis: 5.204,
         star_type: "G"
-    }
+    } //this is used for comparative mode to get reference values for different planets
 };
 
 // ===== UI ELEMENTS =====//
+//DOM access so that JS can read values,change visibility and attach events
 const autofillCheckbox = document.getElementById("autofill");
 const advancedFields = document.getElementById("advanced-fields");
 const advancedNumeric = document.getElementById("advanced-numeric");
 const advancedComparative = document.getElementById("advanced-comparative");
 const numericFields = document.getElementById("numeric-fields");
 const comparativeFields = document.getElementById("comparative-fields");
+//querySelectorAll finds all inputs with inputMode and returns a list
 const modeRadios = document.querySelectorAll("input[name='inputMode']");
 const numericRequired = [
     document.getElementById("radius"),
     document.getElementById("mass"),
     document.getElementById("temp")
 ];
-const comparativeRequired = [
+const comparativeRequired = [ //for comparative mode
     document.getElementById("radiusComparative"),
     document.getElementById("massComparative"),
     document.getElementById("tempComparative")
 ];
 
+//this part handles mode switching and field visibility logic
 function getCurrentMode(){
     const checked = document.querySelector("input[name='inputMode']:checked");
     return checked ? checked.value : "numeric";
 }
+//this function checks if input mode is numeric or comparative and shows/hides advanced fields accordingly
 
 function toggleAdvancedByMode(mode){
     if(!advancedFields){
@@ -77,33 +84,34 @@ function toggleAdvancedByMode(mode){
 
     if(autofillCheckbox && autofillCheckbox.checked){
         advancedFields.style.display = "none";
-        return;
+        return; //if autofill is checked, hide advanced fields
     }
 
-    advancedFields.style.display = "block";
+    advancedFields.style.display = "block"; //if autofill is off, show advanced fields
     if(advancedNumeric){
         advancedNumeric.style.display = mode === "numeric" ? "block" : "none";
-    }
+    }//If mode is numeric → show numeric advanced fields
     if(advancedComparative){
         advancedComparative.style.display = mode === "comparative" ? "block" : "none";
     }
 }
 
+//this function toggles visibility of sections based on selected mode
 function toggleModeSections(){
     const mode = getCurrentMode();
     if(numericFields){
         numericFields.style.display = mode === "numeric" ? "block" : "none";
-    }
+    }//If mode is numeric → show numeric fields
     if(comparativeFields){
         comparativeFields.style.display = mode === "comparative" ? "block" : "none";
-    }
+    }//If mode is comparative → show comparative fields
     updateRequiredFields(mode);
     toggleAdvancedByMode(mode);
 }
 
-function updateRequiredFields(mode){
+function updateRequiredFields(mode){ //handles HTML 'required' attribute based on mode
     numericRequired.forEach(el => {
-        if(el){ el.required = mode === "numeric"; }
+        if(el){ el.required = mode === "numeric"; } //loops over numeric fields and if mode is numeric->required and true
     });
     comparativeRequired.forEach(el => {
         if(el){ el.required = mode === "comparative"; }
@@ -111,34 +119,39 @@ function updateRequiredFields(mode){
 }
 
 // Initial visibility setup and listeners
-toggleModeSections();
+toggleModeSections(); //this runs once page loads to set initial visibility
 
+// ===== EVENT LISTENERS =====//
+//what are Eventisteners? They wait for user actions like clicks or changes and then run specified functions
 if(modeRadios){
     modeRadios.forEach(radio => {
         radio.addEventListener("change", toggleModeSections);
-    });
+    });//for every radiobutton chnage,recalculate ui by calling toggleModeSections
 }
 
 if(autofillCheckbox){
     autofillCheckbox.addEventListener("change", ()=>{
         toggleAdvancedByMode(getCurrentMode());
-    });
+    });//when autofill checkbox changes, recalculate advanced fields visibility
 }
 
 // =====FORM SUBMISSION LOGIC =====//
+//Data leaves the browser->Goes to Flask->Comes back->And is shown to the user
 
 const predictForm = document.getElementById("predictForm");
 const resultDiv = document.getElementById("result");
 
 function getComparativeValue(selectId, key){
+    //This function:
+//Takes a dropdown ID->Takes a feature name->Returns a numeric value from planetReference
     const select = document.getElementById(selectId);
     const planetKey = select ? select.value : null;
     const reference = planetKey ? planetReference[planetKey] : null;
     return reference ? reference[key] : NaN;
 }
-
+//when the form is submitted, prevent default behavior and handle submission with JS
 if(predictForm){
-    predictForm.addEventListener("submit", async (event)=>{
+    predictForm.addEventListener("submit", async (event)=>{ //async because we will use await inside
         event.preventDefault(); //prevent default form submission
 
         //clear previous result
@@ -148,12 +161,12 @@ if(predictForm){
         const autofill = autofillCheckbox ? autofillCheckbox.checked : false;
         const payload = { autofill };
 
-        if(mode === "numeric"){
+        if(mode === "numeric"){ //parseFloat converts "123.45" to 123.45
             payload.radius = parseFloat(document.getElementById("radius").value);
             payload.mass = parseFloat(document.getElementById("mass").value);
             payload.temp = parseFloat(document.getElementById("temp").value);
 
-            if (!payload.autofill) {
+            if (!payload.autofill) { //if autofill is off, get advanced numeric inputs
                 payload.orbital_period = parseFloat(document.getElementById("orbital_period").value);
                 payload.distance_star = parseFloat(document.getElementById("distance_star").value);
                 payload.star_temp = parseFloat(document.getElementById("star_temp").value);
@@ -167,7 +180,7 @@ if(predictForm){
             payload.mass = getComparativeValue("massComparative","mass");
             payload.temp = getComparativeValue("tempComparative","temp");
 
-            if (!payload.autofill) {
+            if (!payload.autofill) { //if autofill is off, get advanced comparative inputs
                 payload.orbital_period = getComparativeValue("orbital_period_comp","orbital_period");
                 payload.distance_star = getComparativeValue("distance_star_comp","distance_star");
                 payload.star_temp = getComparativeValue("star_temp_comp","star_temp");
@@ -177,16 +190,18 @@ if(predictForm){
             }
         }
 
+        // Send data to server
         try {
-            const response = await fetch("/predict", {
+            const response = await fetch("/predict", { //similar to POST/predict
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify(payload)
             });
-
+//wait for server response
             const data = await response.json();
+            //Flask returns smtg like {habitable: 1, mode: "numeric", habitability_score: 0.85}
             // response.ok to handle validation errors
             if (!response.ok) {
                 resultDiv.innerHTML = `
@@ -223,14 +238,15 @@ function displayResult(data) {
     `;
 }
 
-async function loadFactsCarousel(){
+// ===== FACTS CAROUSEL LOGIC =====//
+async function loadFactsCarousel(){ //async because we will use await inside
     const res = await fetch("/exoplanet-facts");
     const facts = await res.json();
 
     const container = document.getElementById("factsContainer");
     container.innerHTML = "";
 
-    facts.forEach((item, index) => {
+    facts.forEach((item, index) => { //create carousel items dynamically
         const div = document.createElement("div");
         div.className = "carousel-item" + (index === 0 ? " active" : "");
 
@@ -248,4 +264,19 @@ async function loadFactsCarousel(){
     });
 }
 
-loadFactsCarousel();
+loadFactsCarousel(); //call the function to load facts when page loads
+
+//multi line comment explaining data flow
+//HTML form
+//   ↓
+//JavaScript collects input
+//   ↓
+//fetch() sends JSON
+//   ↓
+//Flask /predict
+   ↓
+//ML model
+//   ↓
+//JSON response
+//   ↓
+//JavaScript updates UI
