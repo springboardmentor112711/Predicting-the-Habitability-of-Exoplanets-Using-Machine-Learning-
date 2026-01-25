@@ -197,20 +197,34 @@ def predict():
     
 @app.route('/rank-data',methods=["GET"])#rank endpoint for ranking exoplanets based on habitability probability
 def rank():
-    conn=get_db_connection() #getting database connection
-    df=pd.read_sql("""
-        SELECT id, radius, mass, temp, habitability_probability
-        FROM exoplanets
-        ORDER BY habitability_probability DESC
-    """, conn)
-    conn.close()
-    df=df.fillna(0)
-    df["rank"]=range(1,len(df)+1)
-    return jsonify({
-        "planets": df.to_dict(orient="records") #converting dataframe to list of dictionaries
-        #example: [{"id":1,"radius":1.5,...},{"id":2,"radius":2.0,...},...]
-    })
+    conn = get_db_connection()
+    
+    # Check if connection was successful
+    if conn is None:
+        return jsonify({
+            "error": "Database connection failed. Check your credentials and network."
+        }), 500
 
+    try:
+        # Use a context manager (with) or standard try/finally to ensure closure
+        df = pd.read_sql("""
+            SELECT id, radius, mass, temp, habitability_probability 
+            FROM exoplanets 
+            ORDER BY habitability_probability DESC
+        """, conn)
+        
+        df = df.fillna(0)
+        df["rank"] = range(1, len(df) + 1)
+        
+        return jsonify({
+            "planets": df.to_dict(orient="records")
+        })
+    except Exception as e:
+        print(f"❌ Query failed: {e}")
+        return jsonify({"error": "Failed to fetch ranking data"}), 500
+    finally:
+        # This ALWAYS runs, even if the query fails, preventing "leaking" connections
+        conn.close()
 
 @app.route('/planet/<int:planet_id>', methods=["GET"])
 def planet_detail(planet_id):
