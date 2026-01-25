@@ -20,7 +20,7 @@ cluster_defaults=joblib.load("cluster_defaults.pkl")
 
 def get_db_connection():
     conn=psycopg2.connect( #connecting to posgresql database in supabase
-        host=os.getenv("SUPABASE_DB_HOST"),
+        host=os.getenv("SUPABASE_DB_URL"),
         user=os.getenv("SUPABASE_DB_USER"),
         password=os.getenv("SUPABASE_DB_PASSWORD"),
         port=os.getenv("SUPABASE_DB_PORT"),
