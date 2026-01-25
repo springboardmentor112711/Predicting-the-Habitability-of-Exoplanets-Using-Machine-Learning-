@@ -20,16 +20,19 @@ cluster_defaults=joblib.load("cluster_defaults.pkl")
 
 
 def get_db_connection():
-    db_url = os.getenv("SUPABASE_DB_URL")
-    
     try:
-        # dsn= tells psycopg2 to parse the full URI string
-        conn = psycopg2.connect(dsn=db_url)
+        conn = psycopg2.connect(
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            host=os.getenv("DB_HOST"),
+            port=os.getenv("DB_PORT"),
+            database=os.getenv("DB_NAME"),
+            sslmode="require"  # This is the safest way to pass sslmode
+        )
         return conn
     except Exception as e:
         print(f"❌ Database connection failed: {e}")
         return None
-    
 
 @app.route('/',methods=["GET"]) #this is endpoint for rendering home page
 def home():
