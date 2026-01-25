@@ -5,6 +5,9 @@ ExoHabit AI is a full-stack machine learning web application that predicts and e
 It combines ML inference, statistical analysis, and interactive visualizations to support both global discovery and planet-level explainability.
 
 ---
+## Access the site on: 
+
+'''https://exohabit-ai.onrender.com/'''
 
 ## Key Capabilities
 
