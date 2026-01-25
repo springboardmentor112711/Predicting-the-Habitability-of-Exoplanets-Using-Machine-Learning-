@@ -19,20 +19,13 @@ cluster_defaults=joblib.load("cluster_defaults.pkl")
 
 
 def get_db_connection():
-    conn=psycopg2.connect( #connecting to posgresql database in supabase
-        host=os.getenv("SUPABASE_DB_URL"),
-        user=os.getenv("SUPABASE_DB_USER"),
-        password=os.getenv("SUPABASE_DB_PASSWORD"),
-        port=os.getenv("SUPABASE_DB_PORT"),
-        database=os.getenv("SUPABASE_DB_DATABASE")
-    )
-
+    db_url = os.getenv("SUPABASE_DB_URL")
+    
     try:
-        # We use dsn= so psycopg2 knows to treat the string as a full URI
-        conn = psycopg2.connect(dsn=host)
+        # dsn= tells psycopg2 to parse the full URI string
+        conn = psycopg2.connect(dsn=db_url)
         return conn
     except Exception as e:
-        # This will show up in your Render logs if the connection fails
         print(f"❌ Database connection failed: {e}")
         return None
     
