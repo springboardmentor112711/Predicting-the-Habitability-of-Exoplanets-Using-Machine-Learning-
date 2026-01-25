@@ -7,6 +7,8 @@ import pandas as pd
 import joblib #to load trained machine learning model
 import psycopg2 #importing psycopg2 to connect to postgresql database in supabase
 
+load_dotenv()
+
 app=Flask(__name__)  #Flask app instance creation
 
 CORS(app) #Cross-Origin Resource Sharing to allow requests from different origins like frontend to backend
@@ -24,7 +26,16 @@ def get_db_connection():
         port=os.getenv("SUPABASE_DB_PORT"),
         database=os.getenv("SUPABASE_DB_DATABASE")
     )
-    return conn
+
+    try:
+        # We use dsn= so psycopg2 knows to treat the string as a full URI
+        conn = psycopg2.connect(dsn=host)
+        return conn
+    except Exception as e:
+        # This will show up in your Render logs if the connection fails
+        print(f"❌ Database connection failed: {e}")
+        return None
+    
 
 @app.route('/',methods=["GET"]) #this is endpoint for rendering home page
 def home():
