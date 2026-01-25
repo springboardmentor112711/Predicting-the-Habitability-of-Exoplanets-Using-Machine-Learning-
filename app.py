@@ -1,6 +1,7 @@
 from flask import Flask, render_template,request,redirect,url_for,jsonify
 from flask_cors import CORS #to handle cross origin requests like frontend to backend and vice versa
 from flask import send_file #to send files as response for download
+from dotenv import load_dotenv # You might be missing this line!
 import os 
 import json
 import pandas as pd
