@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    .predict-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .predict-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, rgba(0, 150, 255, 0.15), rgba(100, 50, 255, 0.15));
+        border: 1px solid rgba(100, 150, 255, 0.3);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .predict-header h2 {
+        color: #00d4ff;
+        font-weight: 700;
+        font-size: 2rem;
+    }
+    
+    .tab-section {
+        margin-bottom: 2rem;
+    }
+    
+    .nav-tabs {
+        border-bottom: 2px solid rgba(100, 150, 255, 0.3);
+    }
+    
+    .nav-tabs .nav-link {
+        color: rgba(224, 230, 255, 0.7);
+        border: 1px solid transparent;
+        border-radius: 10px 10px 0 0;
+        margin-right: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        border-color: rgba(100, 150, 255, 0.3);
+        color: #00d4ff;
+    }
+    
+    .nav-tabs .nav-link.active {
+        background: linear-gradient(135deg, rgba(0, 150, 255, 0.2), rgba(100, 50, 255, 0.2));
+        border-color: #00d4ff #00d4ff rgba(100, 150, 255, 0.3);
+        color: #00d4ff;
+    }
+    
+    .form-section {
+        background: linear-gradient(135deg, rgba(15, 20, 40, 0.8), rgba(25, 30, 55, 0.8));
+        border: 1px solid rgba(100, 150, 255, 0.3);
+        border-radius: 15px;
+        padding: 2rem;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 30px rgba(0, 150, 255, 0.15);
+    }
+    
+    .file-upload-area {
+        border: 2px dashed rgba(0, 212, 255, 0.5);
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        background: rgba(0, 212, 255, 0.05);
+    }
+    
+    .file-upload-area:hover {
+        border-color: #00d4ff;
+        background: rgba(0, 212, 255, 0.1);
+    }
+    
+    .file-upload-area.dragover {
+        border-color: #00d4ff;
+        background: rgba(0, 212, 255, 0.15);
+    }
+    
+    .result-container {
+        background: linear-gradient(135deg, rgba(0, 150, 255, 0.15), rgba(100, 50, 255, 0.15));
+        border: 1px solid rgba(100, 150, 255, 0.3);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-top: 2rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .result-box {
+        background: rgba(20, 25, 50, 0.5);
+        border-left: 4px solid #00d4ff;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+    
+    .result-box.habitable {
+        border-left-color: #00ff88;
+    }
+    
+    .result-box.non-habitable {
+        border-left-color: #ff6b6b;
+    }
+    
+    .result-label {
+        color: rgba(224, 230, 255, 0.7);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .result-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #00d4ff;
+        margin-top: 0.5rem;
+    }
+</style>
+
+<div class="predict-container">
+    <div class="predict-header">
+        <h2>Predict Exoplanet Habitability</h2>
+        <p>Single or Batch Predictions with AI</p>
+    </div>
+    
+    <ul class="nav nav-tabs tab-section" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="single-tab" data-bs-toggle="tab" data-bs-target="#single-form" type="button">Single Prediction</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="batch-tab" data-bs-toggle="tab" data-bs-target="#batch-form" type="button">Batch Prediction</button>
+        </li>
+    </ul>
+    
+    <div class="tab-content">
+        <!-- Single Prediction Tab -->
+        <div class="tab-pane fade show active" id="single-form" role="tabpanel">
+            <div class="form-section">
+                <form id="predictForm">
+                    <div class="row">
+                        {% for feature in features %}
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ feature_names[feature] }}</label>
+                            <input type="number" class="form-control" name="{{ feature }}" step="0.001" placeholder="Enter value" required>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mt-3">Predict Habitability</button>
+                </form>
+                
+                <div id="result" class="result-container" style="display:none;">
+                    <div id="resultBox" class="result-box">
+                        <div class="result-label">Habitability Class</div>
+                        <div class="result-value" id="habitability"></div>
+                    </div>
+                    <div class="result-box">
+                        <div class="result-label">Confidence Score</div>
+                        <div class="result-value" id="probability"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Batch Prediction Tab -->
+        <div class="tab-pane fade" id="batch-form" role="tabpanel">
+            <div class="form-section">
+                <h4 style="color: #00d4ff; margin-bottom: 1.5rem;">Upload CSV File</h4>
+                
+                <div class="file-upload-area" id="dropZone">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">UPLOAD</div>
+                    <p style="color: #00d4ff; font-weight: 600; margin-bottom: 0.5rem;">Drag & drop your CSV file here</p>
+                    <p style="color: rgba(224, 230, 255, 0.6);">or click to browse</p>
+                    <input type="file" id="csvFile" accept=".csv" style="display: none;">
+                </div>
+                
+                <div id="fileInfo" style="display:none; margin-top: 1rem; padding: 1rem; background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; color: #00ff88;">
+                    <span id="fileName"></span>
+                </div>
+                
+                <button type="button" id="submitBatch" class="btn btn-primary w-100 mt-3" style="display:none;">Process & View Results</button>
+                
+                <!-- Results Table -->
+                <div id="batchResult" style="display:none; margin-top: 2rem;">
+                    <div style="background: linear-gradient(135deg, rgba(15, 20, 40, 0.8), rgba(25, 30, 55, 0.8)); border: 1px solid rgba(100, 150, 255, 0.3); border-radius: 15px; padding: 2rem; overflow-x: auto;">
+                        <h5 style="color: #00d4ff; margin-bottom: 1.5rem;">Prediction Results</h5>
+                        <div id="resultsTableContainer" style="overflow-x: auto;"></div>
+                        <button id="downloadBtn" class="btn btn-outline-success mt-3" style="width: 100%;">Download Results as CSV</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(100, 150, 255, 0.1); border: 1px solid rgba(100, 150, 255, 0.3); border-radius: 10px;">
+                <h5 style="color: #00d4ff; margin-bottom: 1rem;">CSV Format Requirements</h5>
+                <p style="color: rgba(224, 230, 255, 0.8); margin-bottom: 1rem;">Your CSV file must include these columns (technical names):</p>
+                <code style="background: rgba(20, 25, 50, 0.5); padding: 1rem; border-radius: 8px; display: block; color: #00ff88; overflow-x: auto; margin-bottom: 1rem;">
+                    {% for feature in features %}{{ feature }}{{ ", " if not loop.last }}{% endfor %}
+                </code>
+                <p style="color: rgba(224, 230, 255, 0.8); margin-bottom: 0.5rem;"><strong>Column Descriptions:</strong></p>
+                <ul style="color: rgba(224, 230, 255, 0.7); margin-bottom: 0;">
+                    {% for feature in features %}
+                    <li><strong>{{ feature }}</strong>: {{ feature_names[feature] }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div style="text-align: center; margin-top: 3rem;">
+        <a href="/" class="btn btn-outline-light">Back to Home</a>
+    </div>
+</div>
+
+<script>
+// Single prediction form
+document.getElementById("predictForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+    for (let key in data) {
+        data[key] = parseFloat(data[key]);
+    }
+
+    
+    try {
+        const response = await fetch("/predict", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.error) {
+            alert("Error: " + result.error);
+        } else {
+            const habitabilityDiv = document.getElementById("habitability");
+            const resultBox = document.getElementById("resultBox");
+            
+            habitabilityDiv.textContent = result.habitability_class;
+            document.getElementById("probability").textContent = (result.habitability_probability * 100).toFixed(1) + "%";
+            
+            if (result.habitability_class === "Habitable") {
+                resultBox.classList.remove("non-habitable");
+                resultBox.classList.add("habitable");
+            } else {
+                resultBox.classList.remove("habitable");
+                resultBox.classList.add("non-habitable");
+            }
+            
+            document.getElementById("result").style.display = "block";
+        }
+    } catch (error) {
+        alert("Error: " + error.message);
+    }
+});
+
+// CSV batch upload
+const dropZone = document.getElementById("dropZone");
+const csvFile = document.getElementById("csvFile");
+const fileInfo = document.getElementById("fileInfo");
+const fileName = document.getElementById("fileName");
+const submitBatch = document.getElementById("submitBatch");
+
+dropZone.addEventListener("click", () => csvFile.click());
+
+["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+["dragenter", "dragover"].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.add("dragover"));
+});
+
+["dragleave", "drop"].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.remove("dragover"));
+});
+
+dropZone.addEventListener("drop", (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    csvFile.files = files;
+    handleFileSelect(files[0]);
+});
+
+csvFile.addEventListener("change", (e) => {
+    handleFileSelect(e.target.files[0]);
+});
+
+function handleFileSelect(file) {
+    if (file && file.name.endsWith('.csv')) {
+        fileName.textContent = "✓ File selected: " + file.name;
+        fileInfo.style.display = "block";
+        submitBatch.style.display = "block";
+    }
+}
+
+let batchResultsData = null;
+
+submitBatch.addEventListener("click", async () => {
+    if (!csvFile.files[0]) {
+        alert("Please select a file");
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append("file", csvFile.files[0]);
+    
+    submitBatch.innerHTML = "⏳ Processing...";
+    submitBatch.disabled = true;
+    
+    try {
+        const response = await fetch("/predict-batch", {
+            method: "POST",
+            body: formData
+        });
+        
+        if (response.ok) {
+            const text = await response.text();
+            const lines = text.split('\n').filter(line => line.trim());
+            
+            if (lines.length > 1) {
+                const headers = lines[0].split(',');
+                const rows = lines.slice(1).map(line => line.split(','));
+                
+                displayResultsTable(headers, rows);
+                batchResultsData = text;
+                
+                document.getElementById("batchResult").style.display = "block";
+            } else {
+                alert("Error: Empty results");
+            }
+        } else {
+            const error = await response.json();
+            alert("Error: " + error.error);
+        }
+    } catch (error) {
+        alert("Error: " + error.message);
+    } finally {
+        submitBatch.innerHTML = "⚡ Process & View Results";
+        submitBatch.disabled = false;
+    }
+});
+
+function displayResultsTable(headers, rows) {
+    const tableContainer = document.getElementById("resultsTableContainer");
+    
+    let tableHTML = '<table style="width: 100%; border-collapse: collapse; color: #e0e6ff;">';
+    tableHTML += '<thead style="background: linear-gradient(135deg, rgba(0, 150, 255, 0.2), rgba(100, 50, 255, 0.2));">';
+    tableHTML += '<tr>';
+    
+    headers.forEach(header => {
+        tableHTML += `<th style="padding: 1rem; text-align: left; color: #00d4ff; border-bottom: 2px solid rgba(100, 150, 255, 0.3); font-weight: 600;">${header}</th>`;
+    });
+    
+    tableHTML += '</tr></thead><tbody>';
+    
+    rows.forEach((row, idx) => {
+        const isHabitable = row[row.length - 2] === 'Habitable';
+        const bgColor = isHabitable ? 'rgba(0, 255, 136, 0.05)' : 'rgba(255, 107, 107, 0.05)';
+        const borderColor = isHabitable ? '#00ff88' : '#ff6b6b';
+        
+        tableHTML += `<tr style="background: ${bgColor}; border-bottom: 1px solid rgba(100, 150, 255, 0.2); border-left: 3px solid ${borderColor};">`;
+        
+        row.forEach((cell, cellIdx) => {
+            let displayCell = cell;
+            if (cellIdx === row.length - 1) {
+                displayCell = (parseFloat(cell) * 100).toFixed(1) + '%';
+            }
+            tableHTML += `<td style="padding: 1rem; border-right: 1px solid rgba(100, 150, 255, 0.1);">${displayCell}</td>`;
+        });
+        
+        tableHTML += '</tr>';
+    });
+    
+    tableHTML += '</tbody></table>';
+    tableContainer.innerHTML = tableHTML;
+}
+
+document.getElementById("downloadBtn").addEventListener("click", () => {
+    if (!batchResultsData) {
+        alert("No results to download");
+        return;
+    }
+    
+    const blob = new Blob([batchResultsData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "exoplanet_predictions.csv";
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    .export-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    .export-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, rgba(0, 150, 255, 0.15), rgba(100, 50, 255, 0.15));
+        border: 1px solid rgba(100, 150, 255, 0.3);
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 40px rgba(0, 150, 255, 0.2);
+    }
+    
+    .export-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #00d4ff, #6b6eff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+    }
+    
+    .export-header p {
+        font-size: 1.1rem;
+        color: rgba(224, 230, 255, 0.7);
+    }
+    
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+    
+    .stat-box {
+        background: linear-gradient(135deg, rgba(0, 150, 255, 0.1), rgba(100, 50, 255, 0.1));
+        border: 1px solid rgba(100, 150, 255, 0.3);
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        backdrop-filter: blur(10px);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #00d4ff;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: rgba(224, 230, 255, 0.7);
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .export-section {
+        margin-bottom: 3rem;
+    }
+    
+    .section-title {
+        color: #00d4ff;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid rgba(100, 150, 255, 0.3);
+    }
+    
+    .export-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+    
+    .export-card {
+        background: linear-gradient(135deg, rgba(15, 20, 40, 0.8), rgba(25, 30, 55, 0.8));
+        border: 1px solid rgba(100, 150, 255, 0.3);
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .export-card:hover {
+        border-color: rgba(100, 150, 255, 0.6);
+        box-shadow: 0 0 50px rgba(0, 150, 255, 0.25);
+        transform: translateY(-10px);
+    }
+    
+    .export-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #00d4ff;
+    }
+    
+    .export-format {
+        color: #00d4ff;
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .export-description {
+        color: rgba(224, 230, 255, 0.7);
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+        flex-grow: 1;
+    }
+    
+    .export-btn {
+        background: linear-gradient(135deg, #00d4ff, #6b6eff);
+        color: white;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .export-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0, 150, 255, 0.4);
+        color: white;
+    }
+    
+    .export-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .empty-message {
+        background: linear-gradient(135deg, rgba(255, 107, 107, 0.15), rgba(255, 165, 0, 0.15));
+        border: 1px solid rgba(255, 107, 107, 0.3);
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        color: rgba(224, 230, 255, 0.8);
+    }
+    
+    .back-button {
+        display: inline-block;
+        margin-top: 3rem;
+        padding: 0.8rem 2rem;
+        background: linear-gradient(135deg, #00d4ff, #6b6eff);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+        text-align: center;
+    }
+    
+    .back-button:hover {
+        box-shadow: 0 10px 30px rgba(0, 150, 255, 0.4);
+        transform: translateY(-2px);
+    }
+    
+    .feature-list {
+        background: rgba(20, 25, 50, 0.5);
+        border: 1px solid rgba(100, 150, 255, 0.2);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .feature-list h5 {
+        color: #00d4ff;
+        margin-bottom: 1rem;
+    }
+    
+    .feature-list ul {
+        color: rgba(224, 230, 255, 0.7);
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+    
+    .feature-list li {
+        margin-bottom: 0.5rem;
+    }
+</style>
+
+<div class="export-container">
+    <!-- Header -->
+    <div class="export-header">
+        <h1>Export Exoplanet Data</h1>
+        <p>Download your exoplanet predictions in multiple formats</p>
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats-row" id="statsRow">
+        <div class="stat-box">
+            <div class="stat-number" id="totalCount">-</div>
+            <div class="stat-label">Total Planets</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="habitableCount">-</div>
+            <div class="stat-label">Habitable Planets</div>
+        </div>
+    </div>
+    
+    <!-- Export Options -->
+    <div class="export-section">
+        <h2 class="section-title">Export Format Options</h2>
+        
+        <div id="emptyMessage" class="empty-message" style="display: none;">
+            No planets in database yet. Start making predictions to export data!
+        </div>
+        
+        <div class="export-options" id="exportOptions">
+            <!-- CSV -->
+            <div class="export-card">
+                <div class="export-icon">CSV</div>
+                <div class="export-format">CSV Format</div>
+                <div class="export-description">Comma-separated values. Perfect for spreadsheets and data analysis.</div>
+                <button class="export-btn" id="csvBtn" onclick="downloadExport('/export-csv')">Download CSV</button>
+            </div>
+            
+            <!-- Excel -->
+            <div class="export-card">
+                <div class="export-icon">XLS</div>
+                <div class="export-format">Excel Format</div>
+                <div class="export-description">Microsoft Excel format. Includes formatting and multiple sheets.</div>
+                <button class="export-btn" id="excelBtn" onclick="downloadExport('/export-excel')">Download Excel</button>
+            </div>
+            
+            <!-- PDF -->
+            <div class="export-card">
+                <div class="export-icon">PDF</div>
+                <div class="export-format">PDF Format</div>
+                <div class="export-description">Professional PDF report with formatted tables and statistics.</div>
+                <button class="export-btn" id="pdfBtn" onclick="downloadExport('/export-pdf')">Download PDF</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Included Data -->
+    <div class="export-section">
+        <h2 class="section-title">What's Included</h2>
+        <div class="feature-list">
+            <h5>Exported Columns</h5>
+            <ul>
+                <li><strong>Planet Radius</strong> (pl_rade) - Size of the planet relative to Earth</li>
+                <li><strong>Planet Mass</strong> (pl_bmasse) - Mass of the planet relative to Earth</li>
+                <li><strong>Orbital Distance</strong> (pl_orbsmax) - Distance from star in AU</li>
+                <li><strong>Star Temperature</strong> (st_teff) - Surface temperature of host star</li>
+                <li><strong>Star Metallicity</strong> (st_met) - Metal content of the star</li>
+                <li><strong>Star Luminosity</strong> (st_luminosity) - Brightness of the host star</li>
+                <li><strong>Planet Luminosity</strong> (pl_luminosity) - Light emitted by the planet</li>
+                <li><strong>Habitability Score</strong> - AI prediction score (0-1 scale)</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Back Button -->
+    <div style="text-align: center;">
+        <a href="/" class="back-button">Back to Home</a>
+    </div>
+</div>
+
+<script>
+    // Load data stats on page load
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            const response = await fetch('/export');
+            const data = await response.json();
+            
+            if (data.error) {
+                document.getElementById('statsRow').style.display = 'none';
+                document.getElementById('exportOptions').style.display = 'none';
+                document.getElementById('emptyMessage').style.display = 'block';
+                
+                // Disable all buttons
+                document.querySelectorAll('.export-btn').forEach(btn => {
+                    btn.disabled = true;
+                });
+            } else {
+                document.getElementById('totalCount').textContent = data.count;
+                document.getElementById('habitableCount').textContent = data.habitable_count;
+            }
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    });
+    
+    // Download export file
+    function downloadExport(url) {
+        const btn = event.target;
+        btn.innerHTML = 'Downloading...';
+        btn.disabled = true;
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) throw new Error('Download failed');
+                return response.blob();
+            })
+            .then(blob => {
+                const blobUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                
+                // Determine filename based on URL
+                if (url.includes('csv')) {
+                    link.download = 'exoplanet_data.csv';
+                } else if (url.includes('excel')) {
+                    link.download = 'exoplanet_data.xlsx';
+                } else if (url.includes('pdf')) {
+                    link.download = 'exoplanet_data.pdf';
+                }
+                
+                document.body.appendChild(link);
+                link.click();
+                window.URL.revokeObjectURL(blobUrl);
+                document.body.removeChild(link);
+                
+                btn.innerHTML = 'Download ' + link.download.split('.')[1].toUpperCase();
+                btn.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error downloading file: ' + error.message);
+                btn.innerHTML = 'Download Failed';
+                btn.disabled = false;
+            });
+    }
+</script>
+
+{% endblock %}

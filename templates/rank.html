@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    .rank-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, rgba(0, 150, 255, 0.15), rgba(100, 50, 255, 0.15));
+        border: 1px solid rgba(100, 150, 255, 0.3);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .rank-header h2 {
+        color: #00d4ff;
+        font-weight: 700;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .rank-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .table-wrapper {
+        background: rgba(10, 15, 30, 0.9) !important;
+        border: 1px solid rgba(100, 150, 255, 0.3);
+        border-radius: 15px;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 30px rgba(0, 150, 255, 0.15);
+    }
+    
+    .table-wrapper .table {
+        background: rgba(10, 15, 30, 0.9) !important;
+        color: rgba(224, 230, 255, 0.9) !important;
+    }
+    
+    .table-wrapper thead {
+        background: linear-gradient(90deg, rgba(0, 150, 255, 0.2), rgba(100, 50, 255, 0.2)) !important;
+        border-bottom: 2px solid rgba(100, 150, 255, 0.3) !important;
+    }
+    
+    .table-wrapper thead th {
+        color: #00d4ff !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        font-size: 0.85rem !important;
+        letter-spacing: 1px !important;
+        padding: 1.5rem !important;
+        border: none !important;
+        background: transparent !important;
+    }
+    
+    .table-wrapper tbody tr {
+        border-bottom: 1px solid rgba(100, 150, 255, 0.2) !important;
+        transition: all 0.3s ease !important;
+        background: rgba(10, 15, 30, 0.8) !important;
+    }
+    
+    .table-wrapper tbody tr:hover {
+        background: rgba(0, 150, 255, 0.25) !important;
+    }
+    
+    .table-wrapper tbody tr:nth-child(even) {
+        background: rgba(20, 25, 50, 0.8) !important;
+    }
+    
+    .table-wrapper tbody tr:nth-child(even):hover {
+        background: rgba(0, 150, 255, 0.25) !important;
+    }
+    
+    .table-wrapper tbody td {
+        color: rgba(224, 230, 255, 0.9) !important;
+        padding: 1.2rem 1.5rem !important;
+        border: none !important;
+        background: transparent !important;
+    }
+    
+    .rank-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #00d4ff, #6b6eff);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    .habitability-score {
+        font-weight: 700;
+        color: #00ff88;
+        font-size: 1.1rem;
+    }
+    
+    .score-bar {
+        background: rgba(100, 150, 255, 0.2);
+        height: 6px;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+    
+    .score-fill {
+        background: linear-gradient(90deg, #00d4ff, #00ff88);
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(135deg, rgba(0, 150, 255, 0.1), rgba(100, 50, 255, 0.1));
+        border: 1px solid rgba(100, 150, 255, 0.3);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state-text {
+        color: rgba(224, 230, 255, 0.7);
+        font-size: 1.1rem;
+    }
+</style>
+
+<div class="rank-container">
+    <div class="rank-header">
+        <h2>Exoplanet Rankings</h2>
+        <p>Planets ranked by habitability score</p>
+    </div>
+    
+    {% if data %}
+    <div class="table-wrapper">
+        <div style="overflow-x: auto;">
+            <table class="table mb-0" style="background: rgba(10, 15, 30, 0.9) !important;">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">Rank</th>
+                        <th>Planet Radius</th>
+                        <th>Planet Mass</th>
+                        <th>Orbital Distance</th>
+                        <th>Star Temp</th>
+                        <th>Star Metal</th>
+                        <th>Star Lum</th>
+                        <th>Planet Lum</th>
+                        <th style="width: 150px;">Habitability</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for planet in data %}
+                    <tr>
+                        <td><span class="rank-badge">{{ loop.index }}</span></td>
+                        <td>{{ "%.2f"|format(planet.get('pl_rade', 0)) }}</td>
+                        <td>{{ "%.2f"|format(planet.get('pl_bmasse', 0)) }}</td>
+                        <td>{{ "%.2f"|format(planet.get('pl_orbsmax', 0)) }}</td>
+                        <td>{{ "%.0f"|format(planet.get('st_teff', 0)) }}</td>
+                        <td>{{ "%.2f"|format(planet.get('st_met', 0)) }}</td>
+                        <td>{{ "%.2f"|format(planet.get('st_luminosity', 0)) }}</td>
+                        <td>{{ "%.2f"|format(planet.get('pl_luminosity', 0)) }}</td>
+                        <td>
+                            <div class="habitability-score">{{ "%.3f"|format(planet.get('habitability_score', 0)) }}</div>
+                            <div class="score-bar">
+                                <div class="score-fill" style="width: {{ planet.get('habitability_score', 0) * 100 }}%"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">-</div>
+        <p class="empty-state-text">No planets in database yet</p>
+        <p style="color: rgba(224, 230, 255, 0.5); font-size: 0.95rem;">Add some planets using the predictor to see rankings</p>
+        <a href="/predict-ui" class="btn btn-outline-info" style="margin-top: 1.5rem;">Start Predicting</a>
+    </div>
+    {% endif %}
+    
+    <div style="text-align: center; margin-top: 3rem;">
+        <a href="/" class="btn btn-outline-light">Back to Home</a>
+        <a href="/dashboard" class="btn btn-outline-success" style="margin-left: 1rem;">View Dashboard</a>
+    </div>
+</div>
+
+{% endblock %}
