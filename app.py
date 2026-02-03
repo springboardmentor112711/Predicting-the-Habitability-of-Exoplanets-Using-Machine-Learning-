@@ -1,38 +1,63 @@
-from flask import Flask, render_template,request,redirect,url_for,jsonify
+from flask import Flask, render_template,request,redirect,url_for,jsonify,send_file
 from flask_cors import CORS #to handle cross origin requests like frontend to backend and vice versa
-from flask import send_file #to send files as response for download
+from sqlalchemy import create_engine, text
+import xgboost as xgb
+import joblib
+import pandas as pd
+from urllib.parse import quote_plus
+
 from dotenv import load_dotenv # You might be missing this line!
 import os 
 import json
-import pandas as pd
-import joblib #to load trained machine learning model
-import psycopg2 #importing psycopg2 to connect to postgresql database in supabase
+from threading import Lock
 
 load_dotenv()
 
 app=Flask(__name__)  #Flask app instance creation
 
 CORS(app) #Cross-Origin Resource Sharing to allow requests from different origins like frontend to backend
-model=joblib.load("habitability_trained.pkl") #loading the trained model:)
+# Encode password to handle special characters like @
+DB_URL = f"postgresql://{os.getenv('DB_USER')}:{quote_plus(os.getenv('DB_PASSWORD'))}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
+engine = create_engine(DB_URL, pool_pre_ping=True, pool_recycle=3600)
+
+# --- Model Loading with joblib and xgboost.Booster ---
+preprocessor = joblib.load("preprocessor.pkl")
+model = xgb.Booster()
+model.load_model("habitability_trained.json")
 cluster_model=joblib.load("cluster_model.pkl")
 cluster_scaler=joblib.load("cluster_scaler.pkl")
 cluster_defaults=joblib.load("cluster_defaults.pkl")
 
+# --- Thread-safe lock for duplicate prevention during concurrent requests ---
+db_write_lock = Lock()
 
-def get_db_connection():
-    try:
-        conn = psycopg2.connect(
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            host=os.getenv("DB_HOST"),
-            port=int(os.getenv("DB_PORT")),
-            database=os.getenv("DB_NAME"),
-            sslmode="require"  # This is the safest way to pass sslmode
-        )
-        return conn
-    except Exception as e:
-        print(f"❌ Database connection failed: {e}")
-        return None
+# --- Create unique constraint for duplicate prevention at database level ---
+try:
+    with engine.begin() as conn:
+        # First, clean up existing duplicates by keeping only the first occurrence
+        conn.execute(text("""
+            DELETE FROM exoplanets 
+            WHERE id NOT IN (
+                SELECT MIN(id) FROM exoplanets 
+                GROUP BY 
+                    ROUND(CAST(radius AS numeric), 2),
+                    ROUND(CAST(mass AS numeric), 2),
+                    ROUND(CAST(temp AS numeric), 1)
+            )
+        """))
+        
+        # Now create the unique constraint
+        conn.execute(text("""
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_planet_unique_characteristics
+            ON exoplanets (
+                ROUND(CAST(radius AS numeric), 2),
+                ROUND(CAST(mass AS numeric), 2),
+                ROUND(CAST(temp AS numeric), 1)
+            );
+        """))
+    print("✅ Database cleaned and unique constraint for duplicate prevention is active")
+except Exception as e:
+    print(f"⚠️ Could not setup unique constraint: {e}")
 
 @app.route('/',methods=["GET"]) #this is endpoint for rendering home page
 def home():
@@ -53,17 +78,13 @@ def insights_page():
 @app.route("/db_test",methods=["GET"])#database connection test endpoint
 def db_test():
     try:
-        conn=get_db_connection()#getting database connection
-        cursor=conn.cursor()#creating cursor object to execute sql queries
-        cursor.execute("SELECT 1;")
-        result=cursor.fetchone()
-        cursor.close()
-        conn.close()
-        return jsonify({
-            "status":"success",
-            "message":"Database connection successful",
-            "result":result
-        })
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT 1;")).fetchone()
+            return jsonify({
+                "status":"success",
+                "message":"Database connection successful",
+                "result":result[0] if result else None
+            })
     except Exception as e:
         return jsonify({
             "status":"error",
@@ -75,7 +96,7 @@ def db_test():
 def predict():
     data = request.get_json()
     autofill = data.get("autofill", False)
-
+    input_df=None
     # =============================
     # MANUAL MODE (ALL INPUTS)
     # =============================
@@ -92,8 +113,11 @@ def predict():
             'star_type'
         ]
 
-        # Check for missing fields
-        missing_fields = [field for field in required_fields if field not in data]
+        # Check for missing or empty fields
+        missing_fields = [
+            field for field in required_fields
+            if field not in data or data[field] is None or str(data[field]).strip() == ""
+        ]
 
         if missing_fields:
             return jsonify({
@@ -101,7 +125,7 @@ def predict():
                 "missing_fields": missing_fields
             }), 400
 
-        # Build input DataFrame
+        # Build input DataFrame inside the if block
         input_df = pd.DataFrame([{
             field: data[field] for field in required_fields
         }])
@@ -135,7 +159,7 @@ def predict():
         # Step 2: Get defaults for that cluster
         defaults = cluster_defaults[cluster_id]
 
-        # Step 3: Build full input
+        # Step 3: Build full input DataFrame inside the else block
         input_df = pd.DataFrame([{
             'radius': radius,
             'mass': mass,
@@ -149,98 +173,143 @@ def predict():
         }])
 
     # =============================
+    # VALIDATE NUMERIC INPUTS
+    # =============================
+    numeric_fields = [
+        'radius',
+        'mass',
+        'temp',
+        'orbital_period',
+        'distance_star',
+        'star_temp',
+        'eccentricity',
+        'semi_major_axis'
+    ]
+    numeric_df = input_df[numeric_fields].apply(pd.to_numeric, errors='coerce')
+    if numeric_df.isna().any().any():
+        return jsonify({
+            "error": "Invalid or missing numeric values",
+            "missing_fields": [col for col in numeric_fields if numeric_df[col].isna().any()]
+        }), 400
+
+    # =============================
+    # PREPROCESS DATA WITH SCALER
+    # =============================
+    scaled_input = preprocessor.transform(input_df)
+    
+    # =============================
+    # CREATE DMATRIX WITH FEATURE NAMES
+    # =============================
+    feature_names = list(preprocessor.get_feature_names_out())
+    dmatrix = xgb.DMatrix(scaled_input, feature_names=feature_names)
+    
+    # =============================
     # FINAL ML PREDICTION
     # =============================
-    prediction = int(model.predict(input_df)[0])
-    probability = float(model.predict_proba(input_df)[0][1])
+    probability = float(model.predict(dmatrix)[0])
+    prediction = 1 if probability >= 0.5 else 0
     
-    # >>> ADD THIS BLOCK HERE <<<
-# SAVE PREDICTION TO SUPABASE 
+    # CHECK FOR DUPLICATES AND SAVE TO DATABASE
+    duplicate_found = False
+    planet_id = None
     try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("""
-        INSERT INTO exoplanets
-        (radius, mass, temp, orbital_period, distance_star, star_temp,
-         eccentricity, semi_major_axis, star_type, habitability_probability)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-        """, (
-            float(input_df["radius"][0]),
-            float(input_df["mass"][0]),
-            float(input_df["temp"][0]),
-            float(input_df["orbital_period"][0]),
-            float(input_df["distance_star"][0]),
-            float(input_df["star_temp"][0]),
-            float(input_df["eccentricity"][0]),
-            float(input_df["semi_major_axis"][0]),
-            input_df["star_type"][0],
-            probability
-        ))
-        conn.commit()
+        # Use thread-safe lock to prevent race conditions on concurrent requests
+        with db_write_lock:
+            with engine.begin() as conn:
+                # Check if planet with same core characteristics already exists
+                # Using ROUND for more reliable floating-point comparison
+                existing = conn.execute(text("""
+                    SELECT id FROM exoplanets 
+                    WHERE ROUND(CAST(radius AS numeric), 2) = ROUND(CAST(:radius AS numeric), 2)
+                    AND ROUND(CAST(mass AS numeric), 2) = ROUND(CAST(:mass AS numeric), 2)
+                    AND ROUND(CAST(temp AS numeric), 1) = ROUND(CAST(:temp AS numeric), 1)
+                    LIMIT 1
+                """), {
+                    "radius": float(input_df["radius"][0]),
+                    "mass": float(input_df["mass"][0]),
+                    "temp": float(input_df["temp"][0])
+                }).fetchone()
+                
+                # Only insert if no duplicate found
+                if not existing:
+                    insert_result = conn.execute(text("""
+                    INSERT INTO exoplanets
+                    (radius, mass, temp, orbital_period, distance_star, star_temp,
+                     eccentricity, semi_major_axis, star_type, habitability_probability)
+                    VALUES (:radius, :mass, :temp, :orbital_period, :distance_star, :star_temp,
+                            :eccentricity, :semi_major_axis, :star_type, :probability)
+                    RETURNING id
+                    """), {
+                        "radius": float(input_df["radius"][0]),
+                        "mass": float(input_df["mass"][0]),
+                        "temp": float(input_df["temp"][0]),
+                        "orbital_period": float(input_df["orbital_period"][0]),
+                        "distance_star": float(input_df["distance_star"][0]),
+                        "star_temp": float(input_df["star_temp"][0]),
+                        "eccentricity": float(input_df["eccentricity"][0]),
+                        "semi_major_axis": float(input_df["semi_major_axis"][0]),
+                        "star_type": input_df["star_type"][0],
+                        "probability": probability
+                    })
+                    inserted_row = insert_result.fetchone()
+                    planet_id = inserted_row[0] if inserted_row else None
+                    print("✅ New planet added to database (ID: {})".format(planet_id))
+                else:
+                    duplicate_found = True
+                    planet_id = existing[0]
+                    print("⚠️ Duplicate planet detected (ID: {}) - skipping insert".format(planet_id))
     except Exception as e:
-        print("❌ Database insert failed:", e)
-        
-    finally:
-        try:
-            cur.close()
-            conn.close()
-        except:
-            pass
+        print(f"❌ Database operation failed: {e}")
+        return jsonify({
+            "error": "Database operation failed",
+            "details": str(e)
+        }), 500
     
     
     return jsonify({
         "mode": "autofill" if autofill else "manual",
         "habitable": prediction,
-        "habitability_score": round(probability, 4)
+        "habitability_score": round(probability, 4),
+        "duplicate": duplicate_found,
+        "planet_id": planet_id
     })
 
     
 @app.route('/rank-data',methods=["GET"])#rank endpoint for ranking exoplanets based on habitability probability
 def rank():
-    conn = get_db_connection()
-    
-    # Check if connection was successful
-    if conn is None:
-        return jsonify({
-            "error": "Database connection failed. Check your credentials and network."
-        }), 500
-
     try:
-        # Use a context manager (with) or standard try/finally to ensure closure
-        df = pd.read_sql("""
-            SELECT id, radius, mass, temp, habitability_probability 
-            FROM exoplanets 
-            ORDER BY habitability_probability DESC
-        """, conn)
-        
-        df = df.fillna(0)
-        df["rank"] = range(1, len(df) + 1)
-        
-        return jsonify({
-            "planets": df.to_dict(orient="records")
-        })
+        # Use SQLAlchemy connection context manager for proper pooling
+        with engine.connect() as conn:
+            df = pd.read_sql(text("""
+                SELECT id, radius, mass, temp, habitability_probability 
+                FROM exoplanets 
+                ORDER BY habitability_probability DESC
+            """), conn)
+            
+            df = df.fillna(0)
+            df["rank"] = range(1, len(df) + 1)
+            
+            return jsonify({
+                "planets": df.to_dict(orient="records")
+            })
     except Exception as e:
         print(f"❌ Query failed: {e}")
         return jsonify({"error": "Failed to fetch ranking data"}), 500
-    finally:
-        # This ALWAYS runs, even if the query fails, preventing "leaking" connections
-        conn.close()
 
 @app.route('/planet/<int:planet_id>', methods=["GET"])
 def planet_detail(planet_id):
-    conn = get_db_connection()
-    df = pd.read_sql(
-        """
-        SELECT id, radius, mass, temp, orbital_period, distance_star, star_temp,
-               eccentricity, semi_major_axis, star_type, habitability_probability
-        FROM exoplanets
-        WHERE id = %s
-        LIMIT 1
-        """,
-        conn,
-        params=(planet_id,)
-    )
-    conn.close()
+    with engine.connect() as conn:
+        df = pd.read_sql(
+            text("""
+            SELECT id, radius, mass, temp, orbital_period, distance_star, star_temp,
+                   eccentricity, semi_major_axis, star_type, habitability_probability
+            FROM exoplanets
+            WHERE id = :planet_id
+            LIMIT 1
+            """),
+            conn,
+            params={"planet_id": planet_id}
+        )
 
     if df.empty:
         return jsonify({"error": "Planet not found"}), 404
@@ -277,38 +346,67 @@ def predict_input():
     
 @app.route("/planets", methods=["GET"])#endpoint to fetch exoplanet data from database
 def get_planets():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM exoplanets LIMIT 10;")
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
-
-    return jsonify({
-        "planets": rows
-    })
+    try:
+        with engine.connect() as conn:
+            df = pd.read_sql(text("SELECT * FROM exoplanets LIMIT 10;"), conn)
+            return jsonify({
+                "planets": df.to_dict(orient="records")
+            })
+    except Exception as e:
+        print(f"❌ Query failed: {e}")
+        return jsonify({"error": "Failed to fetch planets"}), 500
     
 @app.route("/feature-importance", methods=["GET"])
 def feature_importance():
     try:
-        xgb_model = model.steps[-1][1]   # extract real model
-        #[-1][1] means last step of pipeline and second element (the model itself)..not the pipeline object
+        # Use gain for more meaningful importance values
+        importance_dict = model.get_score(importance_type='gain')
+        
+        # Get feature names from preprocessor
+        feature_names = preprocessor.get_feature_names_out().tolist()
+        
+        # Aggregate importances back to original feature names
+        base_importance = {
+            "radius": 0.0,
+            "mass": 0.0,
+            "temp": 0.0,
+            "orbital_period": 0.0,
+            "distance_star": 0.0,
+            "star_temp": 0.0,
+            "eccentricity": 0.0,
+            "semi_major_axis": 0.0,
+            "star_type": 0.0
+        }
 
-        importances = xgb_model.feature_importances_ #example: [0.1,0.2,0.3,...] importance scores for each feature
-        feature_names = model.feature_names_in_ #example: ['radius','mass','temp',...] feature names used in training
+        for idx, feature_name in enumerate(feature_names):
+            # XGBoost Booster uses f0, f1, f2... internally
+            xgb_feature_key = f"f{idx}"
+            importance = float(importance_dict.get(xgb_feature_key, 0))
 
+            # Normalize ColumnTransformer prefixes, if any
+            base_name = feature_name.split("__", 1)[-1]
+            if base_name.startswith("star_type_"):
+                base_name = "star_type"
+
+            if base_name in base_importance:
+                base_importance[base_name] += importance
+
+        # Normalize to percentages for a cleaner chart
+        total = sum(base_importance.values())
         result = []
-        for f, i in zip(feature_names, importances): #zipping feature names and importances together
+        for key in base_importance:
+            value = (base_importance[key] / total) if total > 0 else 0
             result.append({
-                "feature": f,
-                "importance": round(float(i), 4)
+                "feature": key,
+                "importance": round(value, 4)
             })
 
         return jsonify({
-            "feature_importance": sorted(result, key=lambda x: x["importance"], reverse=True) #sorting by importance descending
+            "feature_importance": sorted(result, key=lambda x: x["importance"], reverse=True)
         })
 
     except Exception as e:
+        print(f"❌ Feature importance error: {e}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -339,56 +437,65 @@ def feature_importance():
 
 @app.route("/score-distribution",methods=["GET"])#score distribution endpoint
 def score_distribution():
-    conn =get_db_connection() #why connect to database? to fetch habitability scores of exoplanets
-    df=pd.read_sql("SELECT habitability_probability FROM exoplanets;",conn)#fetching habitability probabilities from exoplanets table
-    conn.close()
-    
-    return jsonify({
-        "scores":df['habitability_probability'].dropna().tolist() #converting series to list to send as json response
-    })
+    try:
+        with engine.connect() as conn:
+            df=pd.read_sql(text("SELECT habitability_probability FROM exoplanets;"),conn)#fetching habitability probabilities from exoplanets table
+            
+            return jsonify({
+                "scores":df['habitability_probability'].dropna().tolist() #converting series to list to send as json response
+            })
+    except Exception as e:
+        print(f"❌ Query failed: {e}")
+        return jsonify({"error": "Failed to fetch score distribution"}), 500
 
 @app.route("/correlations", methods=["GET"])#correlations endpoint
 #WHY correlations? to analyze relationships between features and habitability scores
 def correlations():
-    conn = get_db_connection()
-    df = pd.read_sql("""
-        SELECT radius,mass,temp,orbital_period,distance_star,
-               star_temp,eccentricity,semi_major_axis,habitability_probability 
-        FROM exoplanets
-    """, conn)
-    conn.close()
+    try:
+        with engine.connect() as conn:
+            df = pd.read_sql(text("""
+                SELECT radius,mass,temp,orbital_period,distance_star,
+                       star_temp,eccentricity,semi_major_axis,habitability_probability 
+                FROM exoplanets
+            """), conn)
 
-    corr = df.corr().round(3).fillna(0)
+            corr = df.corr().round(3).fillna(0)
 
-    return jsonify({
-        "labels": corr.columns.tolist(),
-        "matrix": corr.values.tolist()
-    })
+            return jsonify({
+                "labels": corr.columns.tolist(),
+                "matrix": corr.values.tolist()
+            })
+    except Exception as e:
+        print(f"❌ Query failed: {e}")
+        return jsonify({"error": "Failed to fetch correlations"}), 500
 
 
 @app.route("/export") #data export endpoint
 def export(): 
     from openpyxl import Workbook #importing openpyxl to create excel files
     
-    conn=get_db_connection() #connecting to database to fetch exoplanet data
-    df=pd.read_sql("SELECT * FROM exoplanets ORDER BY habitability_probability DESC LIMIT 10;",conn) 
-    #fetching top 10 exoplanets based on habitability probability
-    conn.close()
-    
-    wb=Workbook() #creating workbook object to hold excel data
-    ws=wb.active #getting active worksheet from workbook
-    ws.title="Top 10 Habitable Exoplanets" #setting worksheet title
-    
-    ws.append(df.columns.tolist()) #adding header row with column names
-    for row in df.itertuples(index=False): #iterating over dataframe rows without index
-        #itertuples returns namedtuples for each row
-        #example: Row(id=1,radius=1.5,mass=2.0,...)
-        ws.append(list(row)) #adding each row to worksheet
-        
-    file_path = "static/top_10_habitable_exoplanets.xlsx" #file path to save excel file
-    wb.save(file_path) #saving workbook to file
-    
-    return send_file(file_path,as_attachment=True) #sending file as attachment for download
+    try:
+        with engine.connect() as conn:
+            df=pd.read_sql(text("SELECT * FROM exoplanets ORDER BY habitability_probability DESC LIMIT 10;"),conn) 
+            #fetching top 10 exoplanets based on habitability probability
+            
+            wb=Workbook() #creating workbook object to hold excel data
+            ws=wb.active #getting active worksheet from workbook
+            ws.title="Top 10 Habitable Exoplanets" #setting worksheet title
+            
+            ws.append(df.columns.tolist()) #adding header row with column names
+            for row in df.itertuples(index=False): #iterating over dataframe rows without index
+                #itertuples returns namedtuples for each row
+                #example: Row(id=1,radius=1.5,mass=2.0,...)
+                ws.append(list(row)) #adding each row to worksheet
+                
+            file_path = "static/top_10_habitable_exoplanets.xlsx" #file path to save excel file
+            wb.save(file_path) #saving workbook to file
+            
+            return send_file(file_path,as_attachment=True) #sending file as attachment for download
+    except Exception as e:
+        print(f"❌ Export failed: {e}")
+        return jsonify({"error": "Failed to export data"}), 500
 
 
 @app.route("/export-pdf", methods=["GET"])#pdf export endpoint
@@ -401,20 +508,23 @@ def export_pdf():
     from reportlab.lib.pagesizes import A4
     #A4 is a standard page size for documents
     
-    conn=get_db_connection() #connecting to database to fetch exoplanet data
-    df=pd.read_sql("SELECT * FROM exoplanets ORDER BY habitability_probability DESC LIMIT 10;",conn)
-    conn.close()
-    
-    doc=SimpleDocTemplate("static/top_10_habitable_exoplanets.pdf",pagesize=A4)
-    table=Table([df.columns.tolist()]+ df.values.tolist())
-    #what does the above line mean?
-    #it creates a table with header row as column names and data rows as exoplanet data
-    # df.columns.tolist() + df.values.tolist() creates a list of lists where first inner list is header row and rest are data rows
-    #example: [["col1","col2",...],["data1_row1","data2_row1",...],...]
-    
-    doc.build([table]) #building pdf document with the table
-    
-    return send_file("static/top_10_habitable_exoplanets.pdf",as_attachment=True) #sending pdf file as attachment for download
+    try:
+        with engine.connect() as conn:
+            df=pd.read_sql(text("SELECT * FROM exoplanets ORDER BY habitability_probability DESC LIMIT 10;"),conn)
+            
+            doc=SimpleDocTemplate("static/top_10_habitable_exoplanets.pdf",pagesize=A4)
+            table=Table([df.columns.tolist()]+ df.values.tolist())
+            #what does the above line mean?
+            #it creates a table with header row as column names and data rows as exoplanet data
+            # df.columns.tolist() + df.values.tolist() creates a list of lists where first inner list is header row and rest are data rows
+            #example: [["col1","col2",...],["data1_row1","data2_row1",...],...]
+            
+            doc.build([table]) #building pdf document with the table
+            
+            return send_file("static/top_10_habitable_exoplanets.pdf",as_attachment=True) #sending pdf file as attachment for download
+    except Exception as e:
+        print(f"❌ PDF Export failed: {e}")
+        return jsonify({"error": "Failed to export PDF"}), 500
 
 
 @app.route("/exoplanet-facts")

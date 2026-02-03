@@ -88,6 +88,34 @@ html, body {
         inset 0 0 20px rgba(0,229,255,0.4);
 }
 
+/* ===== INFO ICON TOOLTIP ===== */
+.info-icon {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background: rgba(23, 162, 184, 0.3);
+    border: 1px solid rgba(23, 162, 184, 0.6);
+    border-radius: 50%;
+    text-align: center;
+    line-height: 16px;
+    font-size: 12px;
+    cursor: help;
+    color: #17a2b8;
+    transition: all 0.3s ease;
+}
+
+.info-icon:hover {
+    background: rgba(23, 162, 184, 0.6);
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(23, 162, 184, 0.8);
+}
+
+.form-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.3rem;
+}
+
 
 /* ===== ACTION CARDS ===== */
 .action-card {

@@ -1,6 +1,14 @@
 // ===== PLANETARY REFERENCE DATA (used for comparative mode) ===== //
 //this is used to store planet ref data,control ui behavior,collect user inputs and recieve response
 
+// Initialize Bootstrap tooltips when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
 const planetReference = { //const means constant and planetReference is an object storing data about different planets
     //like Map<string, object>
     Earth: { //Earth is the key and its value is another object with various properties
@@ -141,6 +149,10 @@ if(autofillCheckbox){
 const predictForm = document.getElementById("predictForm");
 const resultDiv = document.getElementById("result");
 
+// --- Request debouncing to prevent duplicate submissions ---
+let isSubmitting = false;
+const SUBMIT_DELAY = 1000; // Minimum 1 second between requests
+
 function getComparativeValue(selectId, key){
     //This function:
 //Takes a dropdown ID->Takes a feature name->Returns a numeric value from planetReference
@@ -153,6 +165,12 @@ function getComparativeValue(selectId, key){
 if(predictForm){
     predictForm.addEventListener("submit", async (event)=>{ //async because we will use await inside
         event.preventDefault(); //prevent default form submission
+
+        // Prevent duplicate submissions (debounce)
+        if (isSubmitting) {
+            console.log("Request already in progress, ignoring duplicate click");
+            return;
+        }
 
         //clear previous result
         resultDiv.innerHTML="";
@@ -192,6 +210,9 @@ if(predictForm){
 
         // Send data to server
         try {
+            // Mark submission as in progress
+            isSubmitting = true;
+            
             const response = await fetch("/predict", { //similar to POST/predict
                 method: "POST",
                 headers: {
@@ -209,6 +230,7 @@ if(predictForm){
                         ${data.error || "Prediction failed"}
                     </div>
                 `;
+                isSubmitting = false;
                 return;
             }
 
@@ -221,19 +243,71 @@ if(predictForm){
                     Server error. Please try again.
                 </div>
             `;
+        } finally {
+            // Re-enable submission after delay
+            setTimeout(() => {
+                isSubmitting = false;
+            }, SUBMIT_DELAY);
         }
     });
 }
 
+function clearForm() {
+    // Clear numeric input fields
+    document.getElementById("radius").value = "";
+    document.getElementById("mass").value = "";
+    document.getElementById("temp").value = "";
+    document.getElementById("orbital_period").value = "";
+    document.getElementById("distance_star").value = "";
+    document.getElementById("star_temp").value = "";
+    document.getElementById("eccentricity").value = "";
+    document.getElementById("semi_major_axis").value = "";
+
+    // Clear comparative input fields
+    document.getElementById("radiusComparative").value = "Earth";
+    document.getElementById("massComparative").value = "Earth";
+    document.getElementById("tempComparative").value = "Earth";
+    document.getElementById("orbital_period_comp").value = "Earth";
+    document.getElementById("distance_star_comp").value = "Earth";
+    document.getElementById("eccentricity_comp").value = "Earth";
+    document.getElementById("semi_major_axis_comp").value = "Earth";
+    document.getElementById("star_temp_comp").value = "Earth";
+    document.getElementById("star_type_comp").value = "Earth";
+
+    // Reset mode toggle to numeric
+    document.getElementById("modeNumeric").checked = true;
+    toggleModeSections();
+
+    // Uncheck autofill
+    const autofillCheckbox = document.getElementById("autofill");
+    if (autofillCheckbox) {
+        autofillCheckbox.checked = false;
+    }
+
+    // Clear result div
+    resultDiv.innerHTML = "";
+
+    // Scroll to form
+    document.getElementById("predictForm").scrollIntoView({ behavior: "smooth" });
+}
+
 function displayResult(data) {
     const color = data.habitable === 1 ? "success" : "warning";
+    const duplicateMessage = data.duplicate
+        ? `<p class="mb-2 text-muted">⚠️ This planet already exists in the database. Check the rank page.</p>`
+        : "";
+    const insightsLink = data.planet_id
+        ? `/insights?planet_id=${data.planet_id}`
+        : "/insights";
 
     resultDiv.innerHTML = `
         <div class="alert alert-${color}">
             <h5>${data.habitable ? "🌍 This planet is likely HABITABLE!" : "🪐 This planet is likely NOT habitable."}</h5>
             <p><strong>Mode:</strong> ${data.mode}</p>
             <p><strong>Habitability Score:</strong> ${(data.habitability_score * 100).toFixed(2)}%</p>
-            <a href="/insights" class="btn btn-info mt-2">View Analytics</a>
+            ${duplicateMessage}
+            <a href="${insightsLink}" class="btn btn-info mt-2">View Analytics</a>
+            <button onclick="clearForm()" class="btn btn-primary mt-2 ms-2">Predict Another</button>
         </div>
     `;
 }

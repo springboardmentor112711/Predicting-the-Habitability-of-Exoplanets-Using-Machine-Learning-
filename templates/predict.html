@@ -7,6 +7,14 @@
             <h2 class="neon-title">🔮 Predict Planet Habitability</h2>
             <p class="neon-subtitle">Enter planetary parameters to evaluate habitability using AI</p>
 
+            <!-- Quick Help Guide -->
+            <div class="alert alert-info mb-3" style="background: rgba(23, 162, 184, 0.1); border: 1px solid rgba(23, 162, 184, 0.3);">
+                <small>
+                    <strong>💡 Quick Guide:</strong> Use <strong>Numeric Input</strong> for precise values or <strong>Comparative Input</strong> to compare with known planets. 
+                    Hover over <span class="info-icon">ⓘ</span> for parameter explanations. Enable <strong>Auto-fill</strong> to let AI estimate advanced parameters.
+                </small>
+            </div>
+
             <form id="predictForm" class="mt-4">
                 <div class="btn-group w-100" role="group" aria-label="Input mode toggle"><!--btn-group w-100 means button group with full width-->
                     <input type="radio" class="btn-check" name="inputMode" id="modeNumeric" value="numeric" checked>
@@ -19,41 +27,68 @@
                     <div class="row g-3"><!--g-3 means gutters of size 3-->
                         <!--gutters means spacing between columns-->
                         <div class="col-md-4">
-                            <input type="number" step="any" id="radius" class="glass-input" placeholder="Radius *" required>
+                            <label class="form-label text-light">
+                                Radius (Earth = 1) 
+                                <span class="info-icon" data-bs-toggle="tooltip" title="Planet size relative to Earth. Earth=1, Jupiter≈11, Mars≈0.5. Range: 0.1-20">ⓘ</span>
+                            </label>
+                            <input type="number" step="any" id="radius" class="glass-input" placeholder="e.g., 1.5 (0.1-20)" required>
                         </div>
                         <div class="col-md-4">
-                            <input type="number" step="any" id="mass" class="glass-input" placeholder="Mass *" required>
+                            <label class="form-label text-light">
+                                Mass (Earth = 1) 
+                                <span class="info-icon" data-bs-toggle="tooltip" title="Planet mass relative to Earth. Earth=1, Jupiter≈318, Mars≈0.1. Range: 0.01-500">ⓘ</span>
+                            </label>
+                            <input type="number" step="any" id="mass" class="glass-input" placeholder="e.g., 1.2 (0.01-500)" required>
                         </div>
                         <div class="col-md-4">
-                            <input type="number" step="any" id="temp" class="glass-input" placeholder="Temperature *" required>
+                            <label class="form-label text-light">
+                                Temperature (Kelvin) 
+                                <span class="info-icon" data-bs-toggle="tooltip" title="Surface temperature. Earth≈288K, Venus≈737K, Mars≈210K. Range: 100-800K">ⓘ</span>
+                            </label>
+                            <input type="number" step="any" id="temp" class="glass-input" placeholder="e.g., 288 (100-800)" required>
                         </div>
                     </div>
                 </div>
 
                 <div id="comparative-fields" class="mt-4" style="display:none;">
+                    <div class="alert mb-3" style="background: rgba(23, 162, 184, 0.2); border: 1px solid rgba(23, 162, 184, 0.5); color: #e9faff;">
+                        <small><strong>🌍 Compare with Solar System planets:</strong> Select familiar planets as reference points. Their actual values will be used for prediction.</small>
+                    </div>
                     <div class="row g-3">
                         <div class="col-md-4">
+                            <label class="form-label text-light">
+                                Radius Reference 
+                                <span class="info-icon" data-bs-toggle="tooltip" title="Earth=6,371km, Venus=6,052km, Mars=3,390km, Jupiter=69,911km">ⓘ</span>
+                            </label>
                             <select id="radiusComparative" class="glass-input" aria-label="Radius comparative">
-                                <option value="Earth">Radius: Earth-like</option>
-                                <option value="Venus">Radius: Venus-like</option>
-                                <option value="Mars">Radius: Mars-like</option>
-                                <option value="Jupiter">Radius: Jupiter-like</option>
-                            </select><!---select is a dropdown menu-->
-                        </div>
-                        <div class="col-md-4">
-                            <select id="massComparative" class="glass-input" aria-label="Mass comparative">
-                                <option value="Earth">Mass: Earth-like</option>
-                                <option value="Venus">Mass: Venus-like</option>
-                                <option value="Mars">Mass: Mars-like</option>
-                                <option value="Jupiter">Mass: Jupiter-like</option>
+                                <option value="Earth">🌍 Earth (Medium - 1.0)</option>
+                                <option value="Venus">♀ Venus (Similar to Earth - 0.95)</option>
+                                <option value="Mars">♂ Mars (Small - 0.53)</option>
+                                <option value="Jupiter">♃ Jupiter (Gas Giant - 11.2)</option>
                             </select>
                         </div>
                         <div class="col-md-4">
+                            <label class="form-label text-light">
+                                Mass Reference 
+                                <span class="info-icon" data-bs-toggle="tooltip" title="Determines gravity. Earth=1, Venus=0.82, Mars=0.11, Jupiter=318">ⓘ</span>
+                            </label>
+                            <select id="massComparative" class="glass-input" aria-label="Mass comparative">
+                                <option value="Earth">🌍 Earth (Medium - 1.0)</option>
+                                <option value="Venus">♀ Venus (Similar to Earth - 0.82)</option>
+                                <option value="Mars">♂ Mars (Light - 0.11)</option>
+                                <option value="Jupiter">♃ Jupiter (Massive - 318)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-light">
+                                Temperature Reference 
+                                <span class="info-icon" data-bs-toggle="tooltip" title="Earth=288K (15°C), Venus=737K (464°C), Mars=210K (-63°C), Jupiter=165K (-108°C)">ⓘ</span>
+                            </label>
                             <select id="tempComparative" class="glass-input" aria-label="Temperature comparative">
-                                <option value="Earth">Temperature: Earth-like</option>
-                                <option value="Venus">Temperature: Venus-like</option>
-                                <option value="Mars">Temperature: Mars-like</option>
-                                <option value="Jupiter">Temperature: Jupiter-like</option>
+                                <option value="Earth">🌍 Earth (Habitable - 288K)</option>
+                                <option value="Venus">♀ Venus (Very Hot - 737K)</option>
+                                <option value="Mars">♂ Mars (Cold - 210K)</option>
+                                <option value="Jupiter">♃ Jupiter (Very Cold - 165K)</option>
                             </select>
                         </div>
                     </div>
@@ -67,19 +102,53 @@
                 <div id="advanced-fields" class="mt-4">
                     <div id="advanced-numeric">
                         <div class="row g-3">
-                            <div class="col-md-4"><input type="number" step="any" id="orbital_period" class="glass-input" placeholder="Orbital Period"></div>
-                            <div class="col-md-4"><input type="number" step="any" id="distance_star" class="glass-input" placeholder="Distance From Star"></div>
-                            <div class="col-md-4"><input type="number" step="any" id="eccentricity" class="glass-input" placeholder="Eccentricity"></div>
+                            <div class="col-md-4">
+                                <label class="form-label text-light">
+                                    Orbital Period (days) 
+                                    <span class="info-icon" data-bs-toggle="tooltip" title="Time to complete one orbit. Earth≈365 days, Venus≈225, Jupiter≈4333. Range: 1-10000">ⓘ</span>
+                                </label>
+                                <input type="number" step="any" id="orbital_period" class="glass-input" placeholder="e.g., 365">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-light">
+                                    Distance From Star (AU) 
+                                    <span class="info-icon" data-bs-toggle="tooltip" title="Distance from host star. 1 AU = Earth-Sun distance. Range: 0.1-10">ⓘ</span>
+                                </label>
+                                <input type="number" step="any" id="distance_star" class="glass-input" placeholder="e.g., 1.0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-light">
+                                    Eccentricity 
+                                    <span class="info-icon" data-bs-toggle="tooltip" title="Orbit shape: 0=perfect circle, higher=more elliptical. Earth≈0.017, Mars≈0.093. Range: 0-0.9">ⓘ</span>
+                                </label>
+                                <input type="number" step="any" id="eccentricity" class="glass-input" placeholder="e.g., 0.02 (0-0.9)">
+                            </div>
                         </div>
                         <div class="row g-3 mt-2">
-                            <div class="col-md-6"><input type="number" step="any" id="semi_major_axis" class="glass-input" placeholder="Semi Major Axis"></div>
-                            <div class="col-md-6"><input type="number" step="any" id="star_temp" class="glass-input" placeholder="Star Temperature"></div>
+                            <div class="col-md-6">
+                                <label class="form-label text-light">
+                                    Semi Major Axis (AU) 
+                                    <span class="info-icon" data-bs-toggle="tooltip" title="Average orbital distance from star. Usually same as 'Distance From Star'. Range: 0.1-10">ⓘ</span>
+                                </label>
+                                <input type="number" step="any" id="semi_major_axis" class="glass-input" placeholder="e.g., 1.0">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-light">
+                                    Star Temperature (Kelvin) 
+                                    <span class="info-icon" data-bs-toggle="tooltip" title="Host star's surface temperature. Sun≈5778K. Range: 2500-10000">ⓘ</span>
+                                </label>
+                                <input type="number" step="any" id="star_temp" class="glass-input" placeholder="e.g., 5778">
+                            </div>
                         </div>
                         <div class="mt-3">
+                            <label class="form-label text-light">
+                                Star Type 
+                                <span class="info-icon" data-bs-toggle="tooltip" title="Host star classification. G=Sun-like (yellow), K=orange dwarf, M=red dwarf">ⓘ</span>
+                            </label>
                             <select id="star_type" class="glass-input">
-                                <option value="G">G-Type Star</option>
-                                <option value="K">K-Type Star</option>
-                                <option value="M">M-Type Star</option>
+                                <option value="G">G-Type Star (Sun-like, yellow)</option>
+                                <option value="K">K-Type Star (Orange dwarf, cooler)</option>
+                                <option value="M">M-Type Star (Red dwarf, coolest)</option>
                             </select>
                         </div>
                     </div>
@@ -87,54 +156,54 @@
                     <div id="advanced-comparative" style="display:none;">
                         <div class="row g-3">
                             <div class="col-md-4">
+                                <label class="form-label text-light">Orbital Period</label>
                                 <select id="orbital_period_comp" class="glass-input" aria-label="Orbital period comparative">
-                                    <option value="Earth">Orbital Period: Earth</option>
-                                    <option value="Venus">Orbital Period: Venus</option>
-                                    <option value="Mars">Orbital Period: Mars</option>
-                                    <option value="Jupiter">Orbital Period: Jupiter</option>
+                                    <option value="Earth">🌍 Earth (365 days)</option>
+                                    <option value="Venus">♀ Venus (225 days)</option>
+                                    <option value="Mars">♂ Mars (687 days)</option>
+                                    <option value="Jupiter">♃ Jupiter (4,333 days)</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
+                                <label class="form-label text-light">Distance From Star</label>
                                 <select id="distance_star_comp" class="glass-input" aria-label="Distance from star comparative">
-                                    <option value="Earth">Distance From Star: Earth-like</option>
-                                    <option value="Venus">Distance From Star: Venus-like</option>
-                                    <option value="Mars">Distance From Star: Mars-like</option>
-                                    <option value="Jupiter">Distance From Star: Jupiter-like</option>
+                                    <option value="Earth">🌍 Earth (1.0 AU)</option>
+                                    <option value="Venus">♀ Venus (0.72 AU - Closer)</option>
+                                    <option value="Mars">♂ Mars (1.52 AU - Farther)</option>
+                                    <option value="Jupiter">♃ Jupiter (5.2 AU - Very Far)</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
+                                <label class="form-label text-light">Orbit Shape (Eccentricity)</label>
                                 <select id="eccentricity_comp" class="glass-input" aria-label="Eccentricity comparative">
-                                    <option value="Earth">Eccentricity: Earth-like</option>
-                                    <option value="Venus">Eccentricity: Venus-like</option>
-                                    <option value="Mars">Eccentricity: Mars-like</option>
-                                    <option value="Jupiter">Eccentricity: Jupiter-like</option>
+                                    <option value="Earth">🌍 Earth (Nearly circular - 0.017)</option>
+                                    <option value="Venus">♀ Venus (Most circular - 0.007)</option>
+                                    <option value="Mars">♂ Mars (Elliptical - 0.093)</option>
+                                    <option value="Jupiter">♃ Jupiter (Slightly elliptical - 0.049)</option>
                                 </select>
                             </div>
                         </div>
                         <div class="row g-3 mt-2">
                             <div class="col-md-6">
+                                <label class="form-label text-light">Semi Major Axis</label>
                                 <select id="semi_major_axis_comp" class="glass-input" aria-label="Semi major axis comparative">
-                                    <option value="Earth">Semi Major Axis: Earth</option>
-                                    <option value="Venus">Semi Major Axis: Venus</option>
-                                    <option value="Mars">Semi Major Axis: Mars</option>
-                                    <option value="Jupiter">Semi Major Axis: Jupiter</option>
+                                    <option value="Earth">🌍 Earth (1.0 AU)</option>
+                                    <option value="Venus">♀ Venus (0.72 AU)</option>
+                                    <option value="Mars">♂ Mars (1.52 AU)</option>
+                                    <option value="Jupiter">♃ Jupiter (5.2 AU)</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
+                                <label class="form-label text-light">Star Temperature</label>
                                 <select id="star_temp_comp" class="glass-input" aria-label="Star temperature comparative">
-                                    <option value="Earth">Star Temperature: Sun (G)</option>
-                                    <option value="Venus">Star Temperature: Sun (G)</option>
-                                    <option value="Mars">Star Temperature: Sun (G)</option>
-                                    <option value="Jupiter">Star Temperature: Sun (G)</option>
+                                    <option value="Earth">☀️ Sol (5778K - All planets orbit our Sun)</option>
                                 </select>
                             </div>
                         </div>
                         <div class="mt-3">
+                            <label class="form-label text-light">Star Type</label>
                             <select id="star_type_comp" class="glass-input">
-                                <option value="Earth">Star Type: Sun (G)</option>
-                                <option value="Venus">Star Type: Sun (G)</option>
-                                <option value="Mars">Star Type: Sun (G)</option>
-                                <option value="Jupiter">Star Type: Sun (G)</option>
+                                <option value="Earth">☀️ G-Type (Yellow star - All planets orbit our Sun)</option>
                             </select>
                         </div>
                     </div>
